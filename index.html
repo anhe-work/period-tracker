@@ -1,0 +1,2830 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="经期记录">
+<meta name="theme-color" content="#E8657A">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icon-72.png">
+<!-- iOS Splash Screens -->
+<link rel="apple-touch-startup-image" href="splash-640x1136.png" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)">
+<link rel="apple-touch-startup-image" href="splash-750x1334.png" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)">
+<link rel="apple-touch-startup-image" href="splash-828x1792.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2)">
+<link rel="apple-touch-startup-image" href="splash-1125x2436.png" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)">
+<link rel="apple-touch-startup-image" href="splash-1242x2208.png" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3)">
+<link rel="apple-touch-startup-image" href="splash-1242x2688.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3)">
+<meta name="description" content="私密、安全的经期周期记录工具，数据完全本地隔离，支持多端备份恢复">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="msapplication-TileColor" content="#E8657A">
+<meta name="msapplication-TileImage" content="icon-144.png">
+<title>经期记录</title>
+<script>
+// Android safe-area fallback: some Android WebViews don't report safe-area-inset-top correctly
+// when status bar is transparent, so we enforce a minimum 24px top padding on Android
+(function(){
+  var ua = navigator.userAgent.toLowerCase();
+  if (ua.indexOf('android') !== -1) {
+    try {
+      var style = getComputedStyle(document.documentElement);
+      var safeTop = style.getPropertyValue('--safe-top') || '';
+      var val = parseFloat(safeTop);
+      if (!val || val < 20) {
+        document.documentElement.style.setProperty('--safe-top', '24px');
+      }
+    } catch(e) {}
+  }
+})();
+</script>
+<style>
+/* ===== Reset & Base ===== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --primary:#E8657A;
+  --primary-light:#FCEEF1;
+  --primary-dark:#C94B63;
+  --primary-gradient:linear-gradient(135deg,#E8657A 0%,#F06292 100%);
+  --bg:#FAF5F6;
+  --card:#FFFFFF;
+  --text:#2D2D2D;
+  --text-secondary:#999;
+  --text-tertiary:#CCC;
+  --border:#F0EBEC;
+  --shadow:0 2px 12px rgba(232,101,122,0.08);
+  --shadow-lg:0 4px 20px rgba(232,101,122,0.12);
+  --radius:16px;
+  --radius-sm:10px;
+  --header-h:52px;
+  --nav-h:56px;
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+  --max-w:500px;
+}
+html{font-size:16px;-webkit-text-size-adjust:100%;background:#E8657A}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Helvetica Neue",Helvetica,Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  line-height:1.5;
+  -webkit-tap-highlight-color:transparent;
+  -webkit-touch-callout:none;
+  min-height:100vh;
+  min-height:100dvh;
+  position:relative;
+  width:100%;
+  overflow-wrap:break-word;
+  word-wrap:break-word;
+}
+input,textarea,select,button{font-family:inherit;font-size:inherit}
+button{border:none;background:none;cursor:pointer;-webkit-tap-highlight-color:transparent}
+input[type="date"],input[type="time"]{font-size:16px;-webkit-appearance:none;appearance:none}
+
+/* ===== Layout ===== */
+.header{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  background:var(--primary-gradient);color:#fff;
+  padding-top:var(--safe-top);
+  box-shadow:0 2px 12px rgba(232,101,122,0.25);
+}
+.header-inner{
+  max-width:var(--max-w);margin:0 auto;
+  height:var(--header-h);
+  display:flex;align-items:center;
+  padding:0 4px;position:relative;
+}
+.header-title{
+  position:absolute;left:50%;top:50%;
+  transform:translate(-50%,-50%);
+  -webkit-transform:translate(-50%,-50%);
+  font-size:18px;font-weight:600;
+  letter-spacing:0.5px;pointer-events:none;
+  max-width:calc(100% - 100px);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.header-back{
+  width:44px;height:44px;position:relative;z-index:1;
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;color:#fff;
+  touch-action:manipulation;cursor:pointer;
+}
+.header-right{width:44px;position:relative;z-index:1;}
+
+.content{
+  padding-top:calc(var(--header-h) + var(--safe-top));
+  padding-bottom:calc(var(--nav-h) + var(--safe-bottom));
+  min-height:100vh;
+  min-height:100dvh;
+  position:relative;
+  z-index:1;
+}
+body.no-nav .content{padding-bottom:calc(20px + var(--safe-bottom))}
+body.no-nav .bottom-nav{display:none}
+
+.page{display:none;max-width:var(--max-w);margin:0 auto;padding:14px 14px 20px}
+.page.active{display:block}
+
+/* ===== Bottom Nav ===== */
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;z-index:100;
+  background:#fff;
+  padding-bottom:var(--safe-bottom);
+  box-shadow:0 -2px 12px rgba(0,0,0,0.06);
+  border-top:1px solid var(--border);
+}
+.bottom-nav-inner{
+  max-width:var(--max-w);margin:0 auto;
+  display:flex;height:var(--nav-h);
+}
+.nav-item{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  color:var(--text-secondary);font-size:11px;
+  gap:2px;touch-action:manipulation;cursor:pointer;
+  transition:color 0.2s;user-select:none;
+  -webkit-user-select:none;
+}
+.nav-item.active{color:var(--primary)}
+.nav-item .nav-icon{font-size:21px;line-height:1}
+.nav-item .nav-label{font-size:11px}
+
+/* ===== Cards ===== */
+.card{
+  background:var(--card);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:16px;margin-bottom:12px;
+}
+.card-title{
+  font-size:14px;font-weight:600;color:var(--primary-dark);
+  margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:6px;
+  background:linear-gradient(135deg,#FFF0F5,#FFF5F7);
+  padding:8px 14px;border-radius:10px;
+}
+
+/* ===== Buttons ===== */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  padding:13px 24px;border-radius:var(--radius-sm);
+  font-size:16px;font-weight:600;min-height:48px;
+  touch-action:manipulation;cursor:pointer;transition:opacity 0.15s,transform 0.1s;
+  -webkit-user-select:none;user-select:none;
+  border:none;width:100%;
+}
+.btn:active{transform:scale(0.97);opacity:0.85}
+.btn-primary{
+  background:var(--primary-gradient);color:#fff;
+  box-shadow:0 3px 12px rgba(232,101,122,0.3);
+}
+.btn-secondary{
+  background:#fff;color:var(--primary);
+  border:2px solid var(--primary);
+}
+.btn-danger{
+  background:#fff;color:#E53935;
+  border:2px solid #FFCDD2;
+}
+.btn-sm{padding:8px 16px;font-size:14px;min-height:36px;width:auto;border-radius:8px}
+.btn-block{display:flex;width:100%}
+.btn-row{display:flex;gap:8px}
+.btn-row .btn{flex:1}
+
+/* ===== Stats ===== */
+.stats-row{display:flex;gap:10px;margin-bottom:4px}
+.stat-card{
+  flex:1;text-align:center;
+  background:var(--card);border-radius:var(--radius-sm);
+  padding:14px 8px;box-shadow:var(--shadow);
+}
+.stat-num{font-size:30px;font-weight:700;color:var(--primary);line-height:1}
+.stat-label{font-size:13px;color:var(--text-secondary);margin-top:6px}
+
+/* ===== Bleeding Bars ===== */
+.bleeding-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.bleeding-row:last-child{margin-bottom:0}
+.bleeding-name{width:38px;font-size:14px;color:#666;flex-shrink:0;text-align:right}
+.bleeding-track{
+  flex:1;height:22px;background:#F5F0F1;
+  border-radius:11px;overflow:hidden;min-width:60px;
+}
+.bleeding-fill{
+  height:100%;border-radius:11px;
+  transition:width 0.4s ease;
+  min-width:4px;
+}
+.bleeding-count{
+  width:28px;text-align:right;font-size:15px;
+  font-weight:600;color:#333;flex-shrink:0;
+}
+
+/* ===== Chips ===== */
+.chip-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:8px}
+.chip{
+  padding:11px 4px;border-radius:var(--radius-sm);
+  border:2px solid var(--border);background:#fff;
+  font-size:15px;touch-action:manipulation;cursor:pointer;
+  transition:all 0.15s;height:52px;
+  display:flex;align-items:center;justify-content:center;
+  -webkit-user-select:none;user-select:none;
+}
+.chip.selected{
+  border-color:var(--primary);
+  background:var(--primary-light);
+  color:var(--primary-dark);font-weight:600;
+}
+.chip:active{transform:scale(0.95)}
+
+/* ===== Bleeding Level Buttons ===== */
+.bleeding-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.bleeding-btn{
+  padding:14px 8px;border-radius:var(--radius-sm);
+  border:2px solid var(--border);background:#fff;
+  font-size:16px;font-weight:500;text-align:center;
+  touch-action:manipulation;cursor:pointer;transition:all 0.15s;
+  min-height:52px;
+  display:flex;align-items:center;justify-content:center;
+  -webkit-user-select:none;user-select:none;
+}
+.bleeding-btn:active{transform:scale(0.96)}
+.bleeding-btn.selected{color:#fff;border-width:2px;font-weight:600}
+.bleeding-btn.selected[data-bleeding="light"]{background:#FFB0B6;border-color:#FFB0B6}
+.bleeding-btn.selected[data-bleeding="medium"]{background:#FF7A85;border-color:#FF7A85}
+.bleeding-btn.selected[data-bleeding="heavy"]{background:#E53935;border-color:#E53935}
+.bleeding-btn.selected[data-bleeding="very_heavy"]{background:#B71C1C;border-color:#B71C1C}
+
+/* ===== Forms ===== */
+.form-group{margin-bottom:18px}
+.form-label{
+  font-size:14px;font-weight:600;color:#666;
+  margin-bottom:8px;display:flex;align-items:center;gap:4px;
+}
+.form-input{
+  width:100%;padding:13px 14px;
+  border:2px solid var(--border);border-radius:var(--radius-sm);
+  background:#fff;font-size:16px;color:var(--text);
+  transition:border-color 0.2s;min-height:48px;
+}
+.form-input:focus{outline:none;border-color:var(--primary)}
+textarea.form-input{resize:none;min-height:72px;line-height:1.5}
+
+/* ===== Symptom Checkboxes ===== */
+.symptom-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.symptom-check{
+  display:flex;align-items:center;gap:8px;
+  padding:13px;border-radius:var(--radius-sm);
+  border:2px solid var(--border);background:#fff;
+  cursor:pointer;transition:all 0.15s;
+  min-height:50px;font-size:15px;
+  touch-action:manipulation;
+  -webkit-user-select:none;user-select:none;
+}
+.symptom-check.checked{
+  border-color:var(--primary);
+  background:var(--primary-light);
+  color:var(--primary-dark);font-weight:600;
+}
+.symptom-check .check-box{
+  width:22px;height:22px;border-radius:6px;
+  border:2px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;flex-shrink:0;transition:all 0.15s;
+}
+.symptom-check.checked .check-box{
+  background:var(--primary);border-color:var(--primary);
+  color:#fff;
+}
+
+/* ===== List Items ===== */
+.list-item{
+  display:flex;align-items:center;
+  padding:14px;background:#fff;
+  border-radius:var(--radius-sm);margin-bottom:8px;
+  box-shadow:var(--shadow);
+  touch-action:manipulation;
+  transition:transform 0.1s;
+}
+.list-item:active{transform:scale(0.98)}
+.list-item-content{flex:1;min-width:0}
+.list-item-title{font-size:15px;font-weight:600;color:var(--text)}
+.list-item-sub{font-size:13px;color:var(--text-secondary);margin-top:2px}
+
+/* ===== Day Card ===== */
+.day-card{
+  background:#fff;border-radius:var(--radius-sm);
+  padding:14px;margin-bottom:8px;box-shadow:var(--shadow);
+  cursor:pointer;transition:transform 0.1s;
+  touch-action:manipulation;
+}
+.day-card:active{transform:scale(0.98)}
+.day-card-header{
+  display:flex;justify-content:space-between;
+  align-items:center;margin-bottom:8px;
+}
+.day-card-date{font-size:16px;font-weight:600}
+.day-card-weekday{font-size:13px;color:var(--text-secondary)}
+.day-card-stats{display:flex;gap:8px;flex-wrap:wrap}
+.day-stat{
+  font-size:13px;padding:4px 10px;
+  border-radius:6px;background:var(--primary-light);
+  color:var(--primary-dark);font-weight:500;
+}
+.day-stat.pants{background:#FFF3E0;color:#E65100}
+.day-stat.empty{background:#F5F5F5;color:#999}
+
+/* ===== Change Record ===== */
+.change-record{
+  display:flex;align-items:center;gap:10px;
+  padding:13px 14px;background:#fff;
+  border-radius:var(--radius-sm);margin-bottom:8px;
+  box-shadow:var(--shadow);
+}
+.change-time{
+  font-size:16px;font-weight:600;color:var(--primary);
+  min-width:48px;
+}
+.change-info{flex:1;min-width:0}
+.change-product{font-size:14px;font-weight:500;color:var(--text)}
+.change-bleeding{
+  font-size:12px;padding:2px 8px;border-radius:4px;
+  display:inline-block;margin-top:2px;font-weight:500;
+}
+.change-bleeding.light{background:#FFEBEE;color:#C62828}
+.change-bleeding.medium{background:#FFCDD2;color:#B71C1C}
+.change-bleeding.heavy{background:#EF9A9A;color:#FFF}
+.change-bleeding.very_heavy{background:#B71C1C;color:#FFF}
+.change-note{font-size:13px;color:var(--text-secondary);margin-top:4px}
+.change-delete{
+  width:36px;height:36px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;color:var(--text-tertiary);
+  touch-action:manipulation;cursor:pointer;border-radius:8px;
+}
+.change-delete:active{color:#E53935;background:#FFEBEE}
+.change-edit{
+  width:36px;height:36px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;color:var(--text-tertiary);
+  touch-action:manipulation;cursor:pointer;border-radius:8px;
+}
+.change-edit:active{color:var(--primary);background:var(--primary-light)}
+
+/* ===== Empty State ===== */
+.empty-state{
+  text-align:center;padding:40px 20px;
+}
+.empty-icon{font-size:56px;margin-bottom:12px}
+.empty-title{font-size:18px;font-weight:600;color:var(--text);margin-bottom:8px}
+.empty-desc{font-size:14px;color:var(--text-secondary);margin-bottom:20px}
+
+/* ===== Cycle Card (History) ===== */
+.cycle-card{
+  background:#fff;border-radius:var(--radius);
+  padding:16px;margin-bottom:10px;box-shadow:var(--shadow);
+  cursor:pointer;transition:transform 0.1s;
+  touch-action:manipulation;
+}
+.cycle-card:active{transform:scale(0.98)}
+.cycle-card-header{
+  display:flex;justify-content:space-between;
+  align-items:center;margin-bottom:10px;
+}
+.cycle-num{font-size:16px;font-weight:600;color:var(--text)}
+.cycle-badge{
+  font-size:12px;padding:3px 10px;border-radius:10px;
+  background:var(--primary-light);color:var(--primary-dark);
+  font-weight:500;
+}
+.cycle-badge.ongoing{background:#E8F5E9;color:#2E7D32}
+.cycle-dates{font-size:14px;color:var(--text-secondary);margin-bottom:8px}
+.cycle-duration{
+  display:inline-flex;align-items:baseline;gap:2px;
+  background:linear-gradient(135deg,#FFE4E8,#FFF0F3);
+  border-radius:10px;padding:4px 12px;margin-bottom:10px;
+}
+.cycle-duration-num{font-size:20px;font-weight:700;color:#E8657A;line-height:1.2}
+.cycle-duration-label{font-size:13px;color:#C06070}
+.cycle-stats{display:flex;gap:8px;flex-wrap:wrap}
+.cycle-stat{
+  font-size:13px;padding:4px 10px;border-radius:6px;
+  background:#F5F0F1;color:var(--text);
+}
+
+/* ===== Modal ===== */
+.modal-overlay{
+  position:fixed;top:0;left:0;right:0;bottom:0;
+  background:rgba(0,0,0,0.45);z-index:200;
+  display:none;align-items:center;justify-content:center;
+  padding:20px;
+}
+.modal-overlay.show{display:flex}
+.modal{
+  background:#fff;border-radius:20px;
+  max-width:360px;width:100%;
+  padding:24px 20px 20px;
+}
+.modal-title{font-size:18px;font-weight:600;margin-bottom:16px;text-align:center}
+.modal-body{margin-bottom:20px}
+.modal-actions{display:flex;gap:8px}
+.modal-actions .btn{flex:1}
+
+/* ===== Picker Modal (Time & Date) ===== */
+.picker-overlay{
+  position:fixed;top:0;left:0;right:0;bottom:0;
+  background:rgba(0,0,0,0.45);z-index:250;
+  display:none;align-items:flex-end;justify-content:center;
+}
+.picker-overlay.show{display:flex}
+.picker-sheet{
+  background:#fff;border-radius:20px 20px 0 0;
+  width:100%;max-width:500px;max-height:85vh;
+  display:flex;flex-direction:column;
+  animation:pickerSlideUp 0.25s ease;
+}
+@keyframes pickerSlideUp{
+  from{transform:translateY(100%)}
+  to{transform:translateY(0)}
+}
+.picker-header{
+  padding:18px 20px 10px;text-align:center;
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+.picker-title{font-size:17px;font-weight:600;color:var(--text)}
+.picker-display{
+  font-size:42px;font-weight:300;color:var(--primary);
+  margin-top:6px;letter-spacing:2px;
+}
+.picker-body{
+  flex:1;overflow-y:auto;padding:16px 20px;
+  -webkit-overflow-scrolling:touch;
+}
+.picker-section{margin-bottom:16px}
+.picker-section-label{
+  font-size:13px;font-weight:600;color:var(--text-secondary);
+  margin-bottom:10px;text-align:center;
+}
+.picker-grid{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.picker-item{
+  width:52px;height:40px;display:flex;align-items:center;justify-content:center;
+  border-radius:10px;font-size:15px;font-weight:500;
+  background:#F5F0F1;color:var(--text);
+  touch-action:manipulation;cursor:pointer;
+  transition:all 0.15s;-webkit-user-select:none;user-select:none;
+  border:2px solid transparent;
+}
+.picker-item:active{transform:scale(0.95)}
+.picker-item.selected{
+  background:var(--primary-gradient);color:#fff;
+  box-shadow:0 3px 10px rgba(232,101,122,0.35);
+  border-color:var(--primary-dark);
+}
+.picker-weekdays{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:6px}
+.picker-weekday{text-align:center;font-size:12px;color:var(--text-secondary);font-weight:600;padding:6px 0}
+.picker-days{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.picker-day{
+  aspect-ratio:1;display:flex;align-items:center;justify-content:center;
+  border-radius:50%;font-size:15px;font-weight:500;
+  background:#F5F0F1;color:var(--text);cursor:pointer;
+  touch-action:manipulation;transition:all 0.15s;
+  -webkit-user-select:none;user-select:none;
+}
+.picker-day:active{transform:scale(0.9)}
+.picker-day.other-month{color:var(--text-tertiary);background:transparent}
+.picker-day.today{border:2px solid var(--primary);color:var(--primary)}
+.picker-day.selected{
+  background:var(--primary-gradient);color:#fff;
+  box-shadow:0 3px 10px rgba(232,101,122,0.35);
+  border-color:transparent;
+}
+.picker-nav{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:12px;padding:0 4px;
+}
+.picker-nav-btn{
+  width:36px;height:36px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--primary-light);color:var(--primary);
+  font-size:18px;font-weight:700;cursor:pointer;
+  touch-action:manipulation;transition:opacity 0.15s;
+  -webkit-user-select:none;user-select:none;
+}
+.picker-nav-btn:active{opacity:0.6}
+.picker-nav-label{font-size:16px;font-weight:600;color:var(--text)}
+.picker-actions{
+  display:flex;gap:10px;padding:12px 20px 20px;
+  border-top:1px solid var(--border);flex-shrink:0;
+}
+.picker-actions .btn{flex:1}
+
+/* hide native date/time icons */
+input[type="date"].picker-input,input[type="time"].picker-input{
+  background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23E8657A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 12px center;
+  padding-right:36px;
+}
+
+/* ===== Wheel Time Picker ===== */
+.wheel-wrap{
+  display:flex;justify-content:center;align-items:center;gap:2px;
+  position:relative;padding:0 16px;
+}
+.wheel-highlight{
+  position:absolute;left:16px;right:16px;top:50%;
+  transform:translateY(-50%);-webkit-transform:translateY(-50%);
+  height:44px;
+  background:linear-gradient(135deg,rgba(232,101,122,0.10),rgba(244,143,163,0.10));
+  border-radius:14px;pointer-events:none;z-index:0;
+  border-top:1.5px solid rgba(232,101,122,0.25);
+  border-bottom:1.5px solid rgba(232,101,122,0.25);
+}
+.wheel-col{
+  flex:0 0 76px;height:220px;overflow-y:scroll;
+  scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none;position:relative;z-index:1;
+  mask-image:linear-gradient(to bottom,transparent 0%,#000 28%,#000 72%,transparent 100%);
+  -webkit-mask-image:linear-gradient(to bottom,transparent 0%,#000 28%,#000 72%,transparent 100%);
+}
+.wheel-col::-webkit-scrollbar{display:none}
+.wheel-spacer{height:88px}
+.wheel-item{
+  height:44px;display:flex;align-items:center;justify-content:center;
+  scroll-snap-align:center;font-size:20px;font-weight:500;
+  color:var(--text-tertiary);
+  transition:font-size 0.15s,color 0.15s,opacity 0.15s;
+  -webkit-user-select:none;user-select:none;cursor:pointer;
+}
+.wheel-item.active{
+  color:var(--primary);font-size:26px;font-weight:700;
+}
+.wheel-sep{
+  font-size:30px;font-weight:700;color:var(--primary);
+  display:flex;align-items:center;padding:0 4px;z-index:1;
+  margin-top:-6px;
+}
+.wheel-labels{
+  display:flex;justify-content:center;gap:80px;
+  margin-top:14px;padding-bottom:4px;
+}
+.wheel-label{
+  text-align:center;font-size:13px;
+  color:var(--text-secondary);font-weight:600;
+}
+
+/* ===== Toast ===== */
+.toast-container{
+  position:fixed;top:calc(var(--header-h) + var(--safe-top) + 10px);
+  left:0;right:0;z-index:300;
+  display:flex;justify-content:center;
+  pointer-events:none;
+}
+.toast{
+  background:rgba(45,45,45,0.9);color:#fff;
+  padding:10px 20px;border-radius:20px;
+  font-size:14px;max-width:90%;text-align:center;
+  opacity:0;transform:translateY(-10px);
+  transition:all 0.3s ease;
+  backdrop-filter:blur(8px);
+}
+.toast.show{opacity:1;transform:translateY(0)}
+
+/* ===== PWA Install Banner ===== */
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideDown{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(20px)}}
+
+/* ===== Section Title ===== */
+.section-title{
+  font-size:16px;font-weight:600;
+  margin:16px 0 10px;padding-left:4px;
+  display:flex;align-items:center;gap:6px;
+}
+
+/* ===== Misc ===== */
+.text-center{text-align:center}
+.text-secondary{color:var(--text-secondary)}
+.mb-8{margin-bottom:8px}
+.mb-12{margin-bottom:12px}
+.mt-12{margin-top:12px}
+.flex-between{display:flex;justify-content:space-between;align-items:center}
+.cycle-info{text-align:center;margin-bottom:14px}
+.cycle-day-count{font-size:14px;color:var(--text-secondary)}
+.cycle-day-num{font-size:28px;font-weight:700;color:var(--primary)}
+.recent-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 14px;background:#fff;
+  border-radius:var(--radius-sm);margin-bottom:6px;
+  box-shadow:var(--shadow);
+}
+.recent-time{font-size:13px;color:var(--text-secondary);min-width:80px}
+.recent-product{font-size:14px;font-weight:500;flex:1}
+.recent-bleeding{
+  font-size:12px;padding:2px 8px;border-radius:4px;
+  font-weight:500;
+}
+.backup-textarea{
+  width:100%;min-height:120px;padding:12px;
+  border:2px solid var(--border);border-radius:var(--radius-sm);
+  font-size:13px;font-family:monospace;
+  resize:vertical;line-height:1.5;word-break:break-all;
+}
+.backup-textarea:focus{outline:none;border-color:var(--primary)}
+.info-row{
+  display:flex;justify-content:space-between;
+  padding:10px 0;border-bottom:1px solid var(--border);
+  font-size:14px;
+}
+.info-row:last-child{border-bottom:none}
+.info-row .info-label{color:var(--text-secondary)}
+.info-row .info-value{font-weight:600}
+.about-text{font-size:13px;color:var(--text-secondary);line-height:1.7}
+.form-row{display:flex;gap:10px}
+.form-row .form-group{flex:1;margin-bottom:0}
+.day-label{font-size:16px;font-weight:600}
+.day-stats-row{display:flex;gap:6px;flex-wrap:wrap}
+
+/* ===== Calendar ===== */
+.calendar-grid{
+  display:grid;grid-template-columns:repeat(7, 1fr);
+  gap:3px;background:#fff;
+  border-radius:var(--radius);padding:10px;
+  box-shadow:var(--shadow);
+}
+.calendar-header-cell{
+  text-align:center;font-size:13px;font-weight:600;
+  color:var(--text-secondary);padding:6px 0;
+}
+.calendar-cell{
+  aspect-ratio:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  border-radius:10px;font-size:14px;
+  position:relative;cursor:default;
+  min-height:38px;
+}
+.calendar-cell.period-day{
+  background:var(--primary-light);
+  color:var(--primary-dark);font-weight:600;
+}
+.calendar-cell.predicted-day{
+  background:repeating-linear-gradient(45deg, #FCEEF1 0px, #FCEEF1 3px, #FFF5F7 3px, #FFF5F7 7px);
+  color:var(--primary);font-weight:500;
+}
+.calendar-cell.today .calendar-day-num{
+  border:2px solid var(--primary);
+  border-radius:50%;width:28px;height:28px;
+  display:flex;align-items:center;justify-content:center;
+}
+.calendar-cell.period-day.today .calendar-day-num{
+  border-color:var(--primary-dark);
+}
+.calendar-cell.predicted-day.today .calendar-day-num{
+  border-color:var(--primary);
+}
+.calendar-cell.has-records{cursor:pointer}
+.calendar-cell.has-records:active{transform:scale(0.9)}
+.calendar-dot{
+  width:4px;height:4px;border-radius:50%;
+  background:var(--primary);margin-top:1px;
+}
+.calendar-legend{
+  display:flex;gap:14px;margin-top:12px;
+  font-size:12px;color:var(--text-secondary);
+  justify-content:center;flex-wrap:wrap;align-items:center;
+}
+.calendar-legend span{display:flex;align-items:center;gap:4px}
+.calendar-legend-dot{
+  display:inline-block;width:10px;height:10px;border-radius:3px;
+}
+.calendar-legend-dot.period{background:var(--primary-light);border:1px solid var(--primary)}
+.calendar-legend-dot.predicted{
+  background:repeating-linear-gradient(45deg, #FCEEF1 0px, #FCEEF1 2px, #FFF5F7 2px, #FFF5F7 5px);
+  border:1px solid var(--primary);
+}
+.calendar-today-mark{
+  display:inline-block;width:14px;height:14px;
+  border-radius:50%;border:2px solid var(--primary);
+}
+
+/* ===== Prediction Card ===== */
+.predict-card{
+  background:linear-gradient(135deg,#FFF0F5 0%,#FFF5F7 100%);
+  border-radius:var(--radius);
+  padding:16px;margin-bottom:12px;
+  box-shadow:var(--shadow);
+}
+.predict-title{
+  font-size:14px;font-weight:600;color:var(--text);
+  margin-bottom:12px;display:flex;align-items:center;gap:6px;
+}
+.predict-stats{display:flex;gap:16px;text-align:center}
+.predict-stat{
+  flex:1;background:rgba(255,255,255,0.7);
+  border-radius:12px;padding:12px 8px;
+}
+.predict-num{
+  font-size:26px;font-weight:700;color:var(--primary);line-height:1;
+}
+.predict-label{font-size:12px;color:var(--text-secondary);margin-top:4px}
+.predict-divider{
+  width:1px;background:rgba(232,101,122,0.2);flex-shrink:0;
+}
+
+/* ===== Responsive ===== */
+@media(min-width:520px){
+  .stat-num{font-size:34px}
+  .page{padding:16px 16px 24px}
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-inner">
+    <div class="header-back" id="headerBack" style="display:none" onclick="goBack()">&#8249;</div>
+    <div class="header-title" id="headerTitle">经期记录</div>
+    <div class="header-right"></div>
+  </div>
+</div>
+
+<noscript><div style="text-align:center;padding:60px 20px;color:#E53935;font-size:16px;line-height:2">⚠️<br>您的浏览器未启用JavaScript<br>请在设置中允许JS运行后刷新页面</div></noscript>
+
+<!-- Content -->
+<div class="content">
+  <div class="page active" id="page-home">
+    <div class="empty-state">
+      <div class="empty-icon">🌸</div>
+      <div class="empty-title">正在加载...</div>
+      <div class="empty-desc">如长时间未显示，请刷新页面<br>或清除浏览器缓存后重试</div>
+      <button class="btn btn-primary" style="max-width:260px;margin:16px auto 0" onclick="location.reload()">刷新页面</button>
+    </div>
+  </div>
+  <div class="page" id="page-record"></div>
+  <div class="page" id="page-symptoms"></div>
+  <div class="page" id="page-cycleDaily"></div>
+  <div class="page" id="page-dayDetail"></div>
+  <div class="page" id="page-history"></div>
+  <div class="page" id="page-calendar"></div>
+  <div class="page" id="page-backup"></div>
+</div>
+
+<!-- Bottom Nav -->
+<div class="bottom-nav" id="bottomNav">
+  <div class="bottom-nav-inner">
+    <div class="nav-item active" data-page="home" onclick="nav('home')">
+      <span class="nav-icon">&#127968;</span><span class="nav-label">首页</span>
+    </div>
+    <div class="nav-item" data-page="record" onclick="nav('record')">
+      <span class="nav-icon">&#9999;&#65039;</span><span class="nav-label">记录</span>
+    </div>
+    <div class="nav-item" data-page="symptoms" onclick="nav('symptoms')">
+      <span class="nav-icon">&#127777;</span><span class="nav-label">症状</span>
+    </div>
+    <div class="nav-item" data-page="history" onclick="nav('history')">
+      <span class="nav-icon">&#128197;</span><span class="nav-label">历史</span>
+    </div>
+    <div class="nav-item" data-page="backup" onclick="nav('backup')">
+      <span class="nav-icon">&#9881;&#65039;</span><span class="nav-label">更多</span>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modal"></div>
+</div>
+
+<!-- Picker (Time & Date) -->
+<div class="picker-overlay" id="pickerOverlay">
+  <div class="picker-sheet" id="pickerSheet"></div>
+</div>
+
+<!-- Toast -->
+<div class="toast-container"><div class="toast" id="toast"></div></div>
+
+<script>
+/* ===== Constants (var instead of const for compatibility) ===== */
+var PRODUCTS = [
+  {id:'nk_240',label:'240mm',type:'napkin',short:'240mm'},
+  {id:'nk_265',label:'265mm',type:'napkin',short:'265mm'},
+  {id:'nk_275',label:'275mm',type:'napkin',short:'275mm'},
+  {id:'nk_290',label:'290mm',type:'napkin',short:'290mm'},
+  {id:'nk_350',label:'350mm',type:'napkin',short:'350mm'},
+  {id:'nk_420',label:'420mm',type:'napkin',short:'420mm'},
+  {id:'pad_150',label:'护垫',type:'pad',short:'护垫'},
+  {id:'pants',label:'安睡裤',type:'pants',short:'安睡裤'},
+  {id:'tampon',label:'棉条',type:'tampon',short:'棉条'}
+];
+var BLEEDING = [
+  {id:'light',label:'少量',color:'#FFB0B6'},
+  {id:'medium',label:'中等',color:'#FF7A85'},
+  {id:'heavy',label:'量大',color:'#E53935'},
+  {id:'very_heavy',label:'暴多',color:'#B71C1C'}
+];
+var SYMPTOMS = [
+  {id:'cramp',label:'痛经腹痛'},
+  {id:'backache',label:'腰酸背痛'},
+  {id:'headache',label:'头痛头晕'},
+  {id:'breast',label:'乳房胀痛'},
+  {id:'fatigue',label:'疲劳乏力'},
+  {id:'mood',label:'情绪波动'},
+  {id:'bloating',label:'腹胀浮肿'},
+  {id:'bowel',label:'腹泻便秘'},
+  {id:'heaviness',label:'肛门坠胀'}
+];
+var STORAGE_KEY = 'period_tracker_v1';
+var PAGE_TITLES = {
+  home:'经期记录',record:'记录更换',symptoms:'症状打卡',
+  cycleDaily:'本周期每日',dayDetail:'当日详情',
+  calendar:'经期日历',history:'历史经期',backup:'数据管理'
+};
+var SUB_PAGES = ['cycleDaily','dayDetail','calendar'];
+
+/* ===== Global Error Handler ===== */
+window.addEventListener('error', function(e) {
+  try {
+    var msg = (e && e.message) ? e.message : '未知错误';
+    var loc = (e && e.filename) ? e.filename : '';
+    var ln = (e && e.lineno) ? e.lineno : '';
+    showError('JS错误: ' + msg + (ln ? ' (行' + ln + ')' : ''));
+  } catch(x){}
+});
+
+/* ===== State ===== */
+var APP_VERSION = '1.5.8';
+
+/* JS-level cache busting: if version changed, force reload */
+(function() {
+  try {
+    var stored = localStorage.getItem('__app_version__');
+    if (stored && stored !== APP_VERSION) {
+      localStorage.setItem('__app_version__', APP_VERSION);
+      location.reload(true);
+      return;
+    }
+    if (!stored) {
+      localStorage.setItem('__app_version__', APP_VERSION);
+    }
+  } catch(e) {}
+})();
+
+var state = {
+  currentPage: 'home',
+  pageParams: {},
+  data: {cycles: []},
+  recordDate: null,
+  symptomsDate: null,
+  selectedProduct: null,
+  selectedBleeding: null,
+  selectedSymptomsArr: [],
+  navHistory: [],
+  editingCycleId: null,
+  editingChangeId: null,
+  calendarYear: 0,
+  calendarMonth: 0
+};
+
+/* ===== Data Layer ===== */
+var LOCALSTORAGE_AVAILABLE = false;
+function checkStorage() {
+  try {
+    var testKey = '__period_test__';
+    localStorage.setItem(testKey, '1');
+    localStorage.removeItem(testKey);
+    LOCALSTORAGE_AVAILABLE = true;
+  } catch (e) {
+    LOCALSTORAGE_AVAILABLE = false;
+  }
+}
+function loadData() {
+  if (!LOCALSTORAGE_AVAILABLE) { state.data = {cycles: []}; return; }
+  try {
+    var raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      state.data = JSON.parse(raw);
+      if (!state.data.cycles || !state.data.cycles.length) {
+        state.data = {cycles: []};
+      }
+    }
+  } catch (e) {
+    state.data = {cycles: []};
+  }
+}
+function saveData() {
+  if (!LOCALSTORAGE_AVAILABLE) {
+    showToast('存储不可用，数据无法保存');
+    return;
+  }
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.data));
+  } catch (e) {
+    showToast('保存失败，存储空间可能不足');
+  }
+}
+
+function genId() {
+  return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+}
+
+function getCurrentCycle() {
+  for (var i = state.data.cycles.length - 1; i >= 0; i--) {
+    if (!state.data.cycles[i].endDate) return state.data.cycles[i];
+  }
+  return null;
+}
+
+function getCycleById(id) {
+  for (var i = 0; i < state.data.cycles.length; i++) {
+    if (state.data.cycles[i].id === id) return state.data.cycles[i];
+  }
+  return null;
+}
+
+function createCycle(startDate) {
+  var cur = getCurrentCycle();
+  if (cur) {
+    cur.endDate = dayBefore(startDate);
+  }
+  var cycle = {id: genId(), startDate: startDate, endDate: null, changes: [], symptoms: {}};
+  state.data.cycles.push(cycle);
+  saveData();
+  return cycle;
+}
+
+function endCycle(cycleId, endDate) {
+  var c = getCycleById(cycleId);
+  if (c) { c.endDate = endDate; saveData(); }
+}
+
+function reopenCycle(cycleId) {
+  var c = getCycleById(cycleId);
+  if (c) { c.endDate = null; saveData(); }
+}
+
+function getLastEndedCycle() {
+  // Find the most recently ended cycle
+  var last = null;
+  for (var i = state.data.cycles.length - 1; i >= 0; i--) {
+    if (state.data.cycles[i].endDate) {
+      if (!last || state.data.cycles[i].endDate > last.endDate) {
+        last = state.data.cycles[i];
+      }
+    }
+  }
+  return last;
+}
+
+function addChange(cycleId, data) {
+  var c = getCycleById(cycleId);
+  if (c) {
+    var item = {id: genId()};
+    for (var k in data) { if (data.hasOwnProperty(k)) item[k] = data[k]; }
+    c.changes.push(item);
+    saveData();
+  }
+}
+
+function deleteChange(cycleId, changeId) {
+  var c = getCycleById(cycleId);
+  if (c) {
+    var newChanges = [];
+    for (var i = 0; i < c.changes.length; i++) {
+      if (c.changes[i].id !== changeId) newChanges.push(c.changes[i]);
+    }
+    c.changes = newChanges;
+    saveData();
+  }
+}
+
+function getChangeById(cycleId, changeId) {
+  var c = getCycleById(cycleId);
+  if (!c) return null;
+  for (var i = 0; i < c.changes.length; i++) {
+    if (c.changes[i].id === changeId) return c.changes[i];
+  }
+  return null;
+}
+
+function updateChange(cycleId, changeId, data) {
+  var c = getCycleById(cycleId);
+  if (!c) return;
+  for (var i = 0; i < c.changes.length; i++) {
+    if (c.changes[i].id === changeId) {
+      for (var k in data) {
+        if (data.hasOwnProperty(k)) c.changes[i][k] = data[k];
+      }
+      saveData();
+      return;
+    }
+  }
+}
+
+function saveSymptoms(cycleId, date, selected, custom) {
+  var c = getCycleById(cycleId);
+  if (c) {
+    c.symptoms[date] = {selected: selected, custom: custom};
+    saveData();
+  }
+}
+
+function deleteCycle(cycleId) {
+  var newCycles = [];
+  for (var i = 0; i < state.data.cycles.length; i++) {
+    if (state.data.cycles[i].id !== cycleId) newCycles.push(state.data.cycles[i]);
+  }
+  state.data.cycles = newCycles;
+  saveData();
+}
+
+/* ===== Utilities ===== */
+function pad2(n) { return n < 10 ? '0' + n : '' + n; }
+
+function todayStr() {
+  var d = new Date();
+  return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+}
+
+function nowTimeStr() {
+  var d = new Date();
+  return pad2(d.getHours()) + ':' + pad2(d.getMinutes());
+}
+
+function formatDate(s) {
+  if (!s) return '';
+  var d = new Date(s + 'T00:00:00');
+  return (d.getMonth() + 1) + '月' + d.getDate() + '日';
+}
+
+function formatDateFull(s) {
+  if (!s) return '';
+  var d = new Date(s + 'T00:00:00');
+  return d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日';
+}
+
+function getWeekday(s) {
+  if (!s) return '';
+  var wd = ['周日','周一','周二','周三','周四','周五','周六'];
+  return wd[new Date(s + 'T00:00:00').getDay()];
+}
+
+function daysBetween(a, b) {
+  var s = new Date(a + 'T00:00:00').getTime();
+  var e = new Date(b + 'T00:00:00').getTime();
+  return Math.round((e - s) / 86400000) + 1;
+}
+
+function dayBefore(s) {
+  var d = new Date(s + 'T00:00:00');
+  d.setDate(d.getDate() - 1);
+  return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+}
+
+function isToday(s) { return s === todayStr(); }
+
+function getProductById(id) {
+  for (var i = 0; i < PRODUCTS.length; i++) {
+    if (PRODUCTS[i].id === id) return PRODUCTS[i];
+  }
+  return null;
+}
+
+function getBleedingById(id) {
+  for (var i = 0; i < BLEEDING.length; i++) {
+    if (BLEEDING[i].id === id) return BLEEDING[i];
+  }
+  return null;
+}
+
+function getSymptomById(id) {
+  for (var i = 0; i < SYMPTOMS.length; i++) {
+    if (SYMPTOMS[i].id === id) return SYMPTOMS[i];
+  }
+  return null;
+}
+
+function arrayContains(arr, val) {
+  for (var i = 0; i < arr.length; i++) {
+    if (arr[i] === val) return true;
+  }
+  return false;
+}
+
+function vibrate() {
+  if (navigator.vibrate) {
+    try { navigator.vibrate(30); } catch(e) {}
+  }
+}
+
+/* ===== Error Display ===== */
+function showError(msg) {
+  var el = document.getElementById('page-home');
+  if (el) {
+    el.innerHTML = '<div style="text-align:center;padding:40px 20px;color:#E53935">' +
+      '<div style="font-size:48px">⚠️</div>' +
+      '<div style="margin-top:16px;font-size:16px;font-weight:600">页面加载出错</div>' +
+      '<div style="margin-top:8px;font-size:13px;color:#666;word-break:break-all">' + msg + '</div>' +
+      '<button class="btn btn-primary" style="margin-top:20px;max-width:200px" onclick="location.reload()">重新加载</button>' +
+      '</div>';
+    el.classList.add('active');
+  }
+}
+
+/* ===== Toast ===== */
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  if (!t) return;
+  t.innerHTML = msg;
+  t.className = 'toast show';
+  t.style.pointerEvents = 'none';
+  if (t._timer) clearTimeout(t._timer);
+  t._timer = setTimeout(function() {
+    t.className = 'toast';
+  }, 2000);
+}
+
+function showUndoToast(msg, undoLabel, onUndo) {
+  var t = document.getElementById('toast');
+  if (!t) return;
+  t.innerHTML = msg + ' <span style="color:#FFCC80;font-weight:600;cursor:pointer;pointer-events:auto;text-decoration:underline;white-space:nowrap" id="undoBtn">' + undoLabel + '</span>';
+  t.className = 'toast show';
+  t.style.pointerEvents = 'auto';
+  if (t._timer) clearTimeout(t._timer);
+  t._timer = setTimeout(function() {
+    t.className = 'toast';
+    t.style.pointerEvents = 'none';
+  }, 5000);
+
+  var undoEl = document.getElementById('undoBtn');
+  if (undoEl) {
+    undoEl.onclick = function(e) {
+      e.stopPropagation();
+      e.preventDefault();
+      if (t._timer) { clearTimeout(t._timer); t._timer = null; }
+      t.className = 'toast';
+      t.style.pointerEvents = 'none';
+      if (onUndo) onUndo();
+    };
+  }
+}
+
+/* ===== Modal ===== */
+function showModal(opts) {
+  var m = document.getElementById('modal');
+  var cancelHtml = (opts.cancelText !== null && opts.cancelText !== undefined) ?
+    '<button class="btn btn-secondary" onclick="hideModal()">' + (opts.cancelText || '取消') + '</button>' : '';
+  var confirmClass = opts.danger ? 'btn-danger' : 'btn-primary';
+  var html = '<div class="modal-title">' + (opts.title || '') + '</div>' +
+    '<div class="modal-body">' + (opts.body || '') + '</div>' +
+    '<div class="modal-actions">' + cancelHtml +
+    '<button class="btn ' + confirmClass + '" id="modalConfirmBtn">' + (opts.confirmText || '确认') + '</button>' +
+    '</div>';
+  m.innerHTML = html;
+  document.getElementById('modalOverlay').className = 'modal-overlay show';
+  document.getElementById('modalConfirmBtn').onclick = function() {
+    hideModal();
+    if (opts.onConfirm) opts.onConfirm(getModalInputValues());
+  };
+}
+
+function getModalInputValues() {
+  var inputs = document.querySelectorAll('#modal input');
+  var vals = {};
+  for (var i = 0; i < inputs.length; i++) {
+    var inp = inputs[i];
+    vals[inp.name || inp.id] = inp.value;
+  }
+  return vals;
+}
+
+function hideModal() {
+  document.getElementById('modalOverlay').className = 'modal-overlay';
+}
+
+/* ===== Picker (Time & Date) ===== */
+var _pickerCallback = null;
+function hidePicker() {
+  document.getElementById('pickerOverlay').className = 'picker-overlay';
+  _pickerCallback = null;
+}
+
+function showTimePicker(opts) {
+  var current = opts.current || '12:00';
+  var parts = current.split(':');
+  var selH = parseInt(parts[0] || 12, 10);
+  var selM = parseInt(parts[1] || 0, 10);
+  selH = isNaN(selH) ? 12 : selH;
+  selM = isNaN(selM) ? 0 : selM;
+  _pickerCallback = opts.onConfirm || null;
+
+  var ITEM_H = 44;
+  var hours = [];
+  for (var h = 0; h < 24; h++) hours.push(pad2(h));
+  var mins = [];
+  for (var m = 0; m < 60; m++) mins.push(pad2(m));
+
+  function buildItems(arr) {
+    var html = '<div class="wheel-spacer"></div>';
+    for (var i = 0; i < arr.length; i++) {
+      html += '<div class="wheel-item" data-idx="' + i + '">' + arr[i] + '</div>';
+    }
+    html += '<div class="wheel-spacer"></div>';
+    return html;
+  }
+
+  function updateActive(col, idx) {
+    var items = col.getElementsByTagName('div');
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].className.indexOf('wheel-item') === -1) continue;
+      var itemIdx = parseInt(items[i].getAttribute('data-idx'), 10);
+      if (itemIdx === idx) {
+        items[i].className = 'wheel-item active';
+      } else {
+        items[i].className = 'wheel-item';
+      }
+    }
+  }
+
+  function render() {
+    var html = '<div class="picker-header">' +
+      '<div class="picker-title">选择时间</div>' +
+      '<div class="picker-display" id="timeDisplay">' + pad2(selH) + ':' + pad2(selM) + '</div></div>' +
+      '<div class="picker-body" style="padding:24px 16px">' +
+      '<div class="wheel-wrap">' +
+      '<div class="wheel-highlight"></div>' +
+      '<div class="wheel-col" id="wheelHour">' + buildItems(hours) + '</div>' +
+      '<div class="wheel-sep">:</div>' +
+      '<div class="wheel-col" id="wheelMin">' + buildItems(mins) + '</div>' +
+      '</div>' +
+      '<div class="wheel-labels"><div class="wheel-label">小时</div><div class="wheel-label">分钟</div></div>' +
+      '</div>' +
+      '<div class="picker-actions">' +
+      '<button class="btn btn-secondary" onclick="hidePicker()">取消</button>' +
+      '<button class="btn btn-primary" onclick="_confirmTimePicker()">确认</button></div>';
+    document.getElementById('pickerSheet').innerHTML = html;
+
+    var hourCol = document.getElementById('wheelHour');
+    var minCol = document.getElementById('wheelMin');
+    var display = document.getElementById('timeDisplay');
+
+    // Set initial scroll positions
+    hourCol.scrollTop = selH * ITEM_H;
+    minCol.scrollTop = selM * ITEM_H;
+    updateActive(hourCol, selH);
+    updateActive(minCol, selM);
+
+    // Scroll listeners with debounce
+    var hTimer = null, mTimer = null;
+    hourCol.onscroll = function() {
+      if (hTimer) clearTimeout(hTimer);
+      hTimer = setTimeout(function() {
+        var idx = Math.round(hourCol.scrollTop / ITEM_H);
+        if (idx < 0) idx = 0;
+        if (idx > 23) idx = 23;
+        selH = idx;
+        updateActive(hourCol, idx);
+        display.textContent = pad2(selH) + ':' + pad2(selM);
+      }, 100);
+    };
+    minCol.onscroll = function() {
+      if (mTimer) clearTimeout(mTimer);
+      mTimer = setTimeout(function() {
+        var idx = Math.round(minCol.scrollTop / ITEM_H);
+        if (idx < 0) idx = 0;
+        if (idx > 59) idx = 59;
+        selM = idx;
+        updateActive(minCol, idx);
+        display.textContent = pad2(selH) + ':' + pad2(selM);
+      }, 100);
+    };
+
+    // Click-to-select on items
+    var hItems = hourCol.getElementsByTagName('div');
+    for (var i = 0; i < hItems.length; i++) {
+      if (hItems[i].className.indexOf('wheel-item') === -1) continue;
+      hItems[i].onclick = function() {
+        var idx = parseInt(this.getAttribute('data-idx'), 10);
+        hourCol.scrollTop = idx * ITEM_H;
+      };
+    }
+    var mItems = minCol.getElementsByTagName('div');
+    for (var j = 0; j < mItems.length; j++) {
+      if (mItems[j].className.indexOf('wheel-item') === -1) continue;
+      mItems[j].onclick = function() {
+        var idx = parseInt(this.getAttribute('data-idx'), 10);
+        minCol.scrollTop = idx * ITEM_H;
+      };
+    }
+  }
+
+  window._confirmTimePicker = function() {
+    var val = pad2(selH) + ':' + pad2(selM);
+    hidePicker();
+    if (_pickerCallback) _pickerCallback(val);
+  };
+
+  render();
+  document.getElementById('pickerOverlay').className = 'picker-overlay show';
+}
+
+function showDatePicker(opts) {
+  var current = opts.current || todayStr();
+  var cD = new Date(current + 'T00:00:00');
+  if (isNaN(cD.getTime())) cD = new Date();
+  var selYear = cD.getFullYear();
+  var selMonth = cD.getMonth();
+  var selDay = cD.getDate();
+  var viewYear = selYear;
+  var viewMonth = selMonth;
+  _pickerCallback = opts.onConfirm || null;
+
+  function daysInMonth(y, m) { return new Date(y, m + 1, 0).getDate(); }
+  function firstWeekday(y, m) { return new Date(y, m, 1).getDay(); }
+
+  function render() {
+    var total = daysInMonth(viewYear, viewMonth);
+    var firstWd = firstWeekday(viewYear, viewMonth);
+    var prevTotal = daysInMonth(viewYear, viewMonth - 1);
+    var daysHtml = '';
+    var wdNames = ['日','一','二','三','四','五','六'];
+    var wdHtml = '';
+    for (var i = 0; i < 7; i++) {
+      wdHtml += '<div class="picker-weekday">' + wdNames[i] + '</div>';
+    }
+    // previous month padding
+    for (var p = firstWd - 1; p >= 0; p--) {
+      daysHtml += '<div class="picker-day other-month">' + (prevTotal - p) + '</div>';
+    }
+    // current month
+    var today = new Date();
+    for (var d = 1; d <= total; d++) {
+      var isToday = (viewYear === today.getFullYear() && viewMonth === today.getMonth() && d === today.getDate());
+      var isSel = (viewYear === selYear && viewMonth === selMonth && d === selDay);
+      var cls = 'picker-day';
+      if (isSel) cls += ' selected';
+      else if (isToday) cls += ' today';
+      daysHtml += '<div class="' + cls + '" data-d="' + d + '" onclick="_pickDateDay(this)">' + d + '</div>';
+    }
+    // next month padding to fill grid
+    var cells = firstWd + total;
+    var rows = Math.ceil(cells / 7);
+    var nextPad = rows * 7 - cells;
+    for (var n = 1; n <= nextPad; n++) {
+      daysHtml += '<div class="picker-day other-month">' + n + '</div>';
+    }
+
+    var html = '<div class="picker-header">' +
+      '<div class="picker-title">选择日期</div>' +
+      '<div class="picker-display">' + selYear + '-' + pad2(selMonth + 1) + '-' + pad2(selDay) + '</div></div>' +
+      '<div class="picker-body">' +
+      '<div class="picker-nav">' +
+      '<div class="picker-nav-btn" onclick="_pickDatePrevMonth()">&#8249;</div>' +
+      '<div class="picker-nav-label">' + viewYear + '年 ' + pad2(viewMonth + 1) + '月</div>' +
+      '<div class="picker-nav-btn" onclick="_pickDateNextMonth()">&#8250;</div></div>' +
+      '<div class="picker-weekdays">' + wdHtml + '</div>' +
+      '<div class="picker-days">' + daysHtml + '</div></div>' +
+      '<div class="picker-actions">' +
+      '<button class="btn btn-secondary" onclick="hidePicker()">取消</button>' +
+      '<button class="btn btn-primary" onclick="_confirmDatePicker()">确认</button></div>';
+    document.getElementById('pickerSheet').innerHTML = html;
+  }
+
+  window._pickDateDay = function(el) {
+    selDay = parseInt(el.getAttribute('data-d'), 10);
+    selYear = viewYear;
+    selMonth = viewMonth;
+    render();
+  };
+  window._pickDatePrevMonth = function() {
+    viewMonth--;
+    if (viewMonth < 0) { viewMonth = 11; viewYear--; }
+    render();
+  };
+  window._pickDateNextMonth = function() {
+    viewMonth++;
+    if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+    render();
+  };
+  window._confirmDatePicker = function() {
+    var val = selYear + '-' + pad2(selMonth + 1) + '-' + pad2(selDay);
+    hidePicker();
+    if (_pickerCallback) _pickerCallback(val);
+  };
+
+  render();
+  document.getElementById('pickerOverlay').className = 'picker-overlay show';
+}
+
+/* ===== Statistics ===== */
+function getCycleStats(cycleId) {
+  var c = getCycleById(cycleId);
+  var result = {pad: 0, napkin: 0, pants: 0, tampon: 0, bleeding: {light: 0, medium: 0, heavy: 0, very_heavy: 0}, total: 0};
+  if (!c) return result;
+  for (var i = 0; i < c.changes.length; i++) {
+    var ch = c.changes[i];
+    var p = getProductById(ch.productId);
+    if (p) {
+      if (p.type === 'pad') result.pad++;
+      else if (p.type === 'napkin') result.napkin++;
+      else if (p.type === 'pants') result.pants++;
+      else if (p.type === 'tampon') result.tampon++;
+    }
+    if (result.bleeding[ch.bleeding] !== undefined) {
+      result.bleeding[ch.bleeding]++;
+    }
+    result.total++;
+  }
+  return result;
+}
+
+function getDayStats(cycleId, date) {
+  var c = getCycleById(cycleId);
+  var result = {pad: 0, napkin: 0, pants: 0, tampon: 0, bleeding: {light: 0, medium: 0, heavy: 0, very_heavy: 0}, changes: []};
+  if (!c) return result;
+  for (var i = 0; i < c.changes.length; i++) {
+    if (c.changes[i].date === date) {
+      result.changes.push(c.changes[i]);
+      var p = getProductById(c.changes[i].productId);
+      if (p) {
+        if (p.type === 'pad') result.pad++;
+        else if (p.type === 'napkin') result.napkin++;
+        else if (p.type === 'pants') result.pants++;
+        else if (p.type === 'tampon') result.tampon++;
+      }
+      if (result.bleeding[c.changes[i].bleeding] !== undefined) {
+        result.bleeding[c.changes[i].bleeding]++;
+      }
+    }
+  }
+  return result;
+}
+
+function getDateRange(cycle) {
+  var start = cycle.startDate;
+  var end = cycle.endDate || todayStr();
+  var dates = [];
+  var d = new Date(start + 'T00:00:00');
+  var endD = new Date(end + 'T00:00:00');
+  while (d.getTime() <= endD.getTime()) {
+    dates.push(d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()));
+    d.setDate(d.getDate() + 1);
+  }
+  return dates;
+}
+
+/* ===== Prediction ===== */
+function addDays(dateStr, n) {
+  var d = new Date(dateStr + 'T00:00:00');
+  d.setDate(d.getDate() + n);
+  return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+}
+
+function getCompletedCycles() {
+  var result = [];
+  for (var i = 0; i < state.data.cycles.length; i++) {
+    if (state.data.cycles[i].endDate) result.push(state.data.cycles[i]);
+  }
+  return result;
+}
+
+function predictNextPeriod() {
+  var completed = getCompletedCycles();
+  var current = getCurrentCycle();
+  if (completed.length === 0) return null;
+
+  // Average cycle length (gap between consecutive start dates)
+  var cycleLengths = [];
+  for (var i = 1; i < state.data.cycles.length; i++) {
+    cycleLengths.push(daysBetween(state.data.cycles[i-1].startDate, state.data.cycles[i].startDate));
+  }
+  if (cycleLengths.length === 0) {
+    // Only 1 cycle ever, use default 28
+    cycleLengths.push(28);
+  }
+
+  var avgCycle = 0;
+  for (var i = 0; i < cycleLengths.length; i++) avgCycle += cycleLengths[i];
+  avgCycle = Math.round(avgCycle / cycleLengths.length);
+
+  // Average period length
+  var periodLengths = [];
+  for (var i = 0; i < completed.length; i++) {
+    periodLengths.push(daysBetween(completed[i].startDate, completed[i].endDate));
+  }
+  var avgPeriod = 0;
+  for (var i = 0; i < periodLengths.length; i++) avgPeriod += periodLengths[i];
+  avgPeriod = Math.round(avgPeriod / periodLengths.length);
+  if (avgPeriod < 2) avgPeriod = 3;
+
+  // Predict next
+  var lastCycle = current || completed[completed.length - 1];
+  var lastStart = lastCycle.startDate;
+  var nextStart = addDays(lastStart, avgCycle);
+  var nextEnd = addDays(nextStart, avgPeriod - 1);
+
+  return {
+    startDate: nextStart,
+    endDate: nextEnd,
+    cycleLength: avgCycle,
+    periodLength: avgPeriod
+  };
+}
+
+function getAllPeriodDates() {
+  var dates = {};
+  for (var i = 0; i < state.data.cycles.length; i++) {
+    var c = state.data.cycles[i];
+    var d = new Date(c.startDate + 'T00:00:00');
+    var endD = new Date((c.endDate || todayStr()) + 'T00:00:00');
+    while (d.getTime() <= endD.getTime()) {
+      var key = d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+      dates[key] = true;
+      d.setDate(d.getDate() + 1);
+    }
+  }
+  return dates;
+}
+
+function getPredictedDates(prediction) {
+  if (!prediction) return {};
+  var dates = {};
+  var d = new Date(prediction.startDate + 'T00:00:00');
+  var endD = new Date(prediction.endDate + 'T00:00:00');
+  while (d.getTime() <= endD.getTime()) {
+    var key = d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+    dates[key] = true;
+    d.setDate(d.getDate() + 1);
+  }
+  return dates;
+}
+
+function findCycleIdForDate(date) {
+  for (var i = state.data.cycles.length - 1; i >= 0; i--) {
+    var c = state.data.cycles[i];
+    if (date >= c.startDate && date <= (c.endDate || '9999-12-31')) return c.id;
+  }
+  return '';
+}
+
+/* ===== Calendar Page ===== */
+function getDaysInMonth(year, month) {
+  return new Date(year, month + 1, 0).getDate();
+}
+
+function getFirstDayOfMonth(year, month) {
+  return new Date(year, month, 1).getDay();
+}
+
+function changeCalendarMonth(delta) {
+  state.calendarMonth += delta;
+  if (state.calendarMonth < 0) { state.calendarMonth = 11; state.calendarYear--; }
+  if (state.calendarMonth > 11) { state.calendarMonth = 0; state.calendarYear++; }
+  renderCalendar();
+}
+
+function renderCalendar() {
+  var el = document.getElementById('page-calendar');
+  if (!el) return;
+  var year = state.calendarYear;
+  var month = state.calendarMonth;
+  var monthNames = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  var dayHeaders = ['日','一','二','三','四','五','六'];
+
+  var periodDates = getAllPeriodDates();
+  var prediction = predictNextPeriod();
+  var predictedDates = getPredictedDates(prediction);
+  var today = todayStr();
+
+  var daysInMonth = getDaysInMonth(year, month);
+  var firstDay = getFirstDayOfMonth(year, month);
+
+  // Prediction card
+  var html = '';
+  if (prediction) {
+    var pStart = prediction.startDate;
+    var cycleCount = state.data.cycles.length;
+    var confidence = cycleCount >= 3 ? '较准确' : '初步估算';
+    html += '<div class="predict-card">' +
+      '<div class="predict-title">🔮 经期预测 · <span style="font-size:12px;color:var(--text-secondary);font-weight:400">' + confidence + '（基于' + cycleCount + '个周期）</span></div>' +
+      '<div style="display:flex;flex-direction:column;gap:0;margin-bottom:12px">' +
+      '<div style="text-align:center;font-size:14px;color:var(--text-secondary)">预计下次来潮</div>' +
+      '<div style="text-align:center;font-size:22px;font-weight:700;color:var(--primary)">' + formatDateFull(pStart) + '</div>' +
+      '<div style="text-align:center;font-size:13px;color:var(--text-secondary)">持续约 ' + prediction.periodLength + ' 天</div>' +
+      '</div>' +
+      '<div class="predict-stats">' +
+      '<div class="predict-stat"><div class="predict-num">' + prediction.cycleLength + '</div><div class="predict-label">天（平均周期）</div></div>' +
+      '<div class="predict-divider"></div>' +
+      '<div class="predict-stat"><div class="predict-num">' + prediction.periodLength + '</div><div class="predict-label">天（平均经期）</div></div>' +
+      '<div class="predict-divider"></div>' +
+      '<div class="predict-stat"><div class="predict-num">' + daysBetween(today, pStart) + '</div><div class="predict-label">天后到下次</div></div>' +
+      '</div></div>';
+  } else {
+    html += '<div class="predict-card">' +
+      '<div class="predict-title">🔮 经期预测</div>' +
+      '<div style="text-align:center;color:var(--text-secondary);padding:16px;font-size:14px">暂无足够历史数据用于预测<br>请先完成至少1个完整周期</div>' +
+      '</div>';
+  }
+
+  // Month navigation
+  html += '<div class="flex-between" style="margin-bottom:10px;padding:0 4px">' +
+    '<button class="btn btn-sm" onclick="changeCalendarMonth(-1)" style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:18px">◀</button>' +
+    '<div style="font-size:18px;font-weight:700;color:var(--text)">' + year + '年 ' + monthNames[month] + '</div>' +
+    '<button class="btn btn-sm" onclick="changeCalendarMonth(1)" style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:18px">▶</button>' +
+    '</div>';
+
+  // Calendar grid
+  html += '<div class="calendar-grid">';
+  for (var i = 0; i < 7; i++) {
+    html += '<div class="calendar-header-cell">' + dayHeaders[i] + '</div>';
+  }
+  for (var i = 0; i < firstDay; i++) {
+    html += '<div class="calendar-cell"></div>';
+  }
+  for (var day = 1; day <= daysInMonth; day++) {
+    var date = year + '-' + pad2(month + 1) + '-' + pad2(day);
+    var isPeriod = !!periodDates[date];
+    var isPredicted = !!predictedDates[date];
+    var isTD = date === today;
+    var cycleId = '';
+    if (isPeriod) cycleId = findCycleIdForDate(date);
+
+    var cls = 'calendar-cell';
+    if (isPeriod) cls += ' period-day';
+    if (isPredicted && !isPeriod) cls += ' predicted-day';
+    if (isTD) cls += ' today';
+    if (cycleId) cls += ' has-records';
+
+    var onClick = '';
+    if (cycleId) {
+      onClick = ' onclick="nav(\'dayDetail\',{cycleId:\'' + cycleId + '\',date:\'' + date + '\'})"';
+    }
+
+    html += '<div class="' + cls + '"' + onClick + '>' +
+      '<span class="calendar-day-num">' + day + '</span>' +
+      ((isPeriod || isPredicted) ? '<span class="calendar-dot"></span>' : '') +
+      '</div>';
+  }
+  html += '</div>';
+
+  // Legend
+  html += '<div class="calendar-legend">' +
+    '<span><span class="calendar-legend-dot period"></span> 已来潮</span>' +
+    '<span><span class="calendar-legend-dot predicted"></span> 预测来潮</span>' +
+    '<span><span class="calendar-today-mark"></span> 今天</span>' +
+    '</div>' +
+    '<div style="text-align:center;margin-top:8px;font-size:12px;color:var(--text-tertiary)">点击日期查看当天详情</div>';
+
+  el.innerHTML = html;
+}
+
+/* ===== Navigation ===== */
+function nav(page, params) {
+  params = params || {};
+  state.navHistory.push({page: state.currentPage, params: state.pageParams});
+  navigateTo(page, params);
+}
+
+function navigateTo(page, params) {
+  params = params || {};
+  state.currentPage = page;
+  state.pageParams = params;
+
+  var pages = document.getElementsByClassName('page');
+  for (var i = 0; i < pages.length; i++) pages[i].className = 'page';
+
+  var target = document.getElementById('page-' + page);
+  if (target) target.className = 'page active';
+
+  var title = document.getElementById('headerTitle');
+  if (title) title.textContent = PAGE_TITLES[page] || '';
+
+  var isSub = arrayContains(SUB_PAGES, page);
+  var back = document.getElementById('headerBack');
+  if (back) back.style.display = isSub ? 'flex' : 'none';
+
+  if (isSub) document.body.className = 'no-nav';
+  else document.body.className = '';
+
+  var navItems = document.getElementsByClassName('nav-item');
+  for (var j = 0; j < navItems.length; j++) {
+    if (navItems[j].getAttribute('data-page') === page) navItems[j].className = 'nav-item active';
+    else navItems[j].className = 'nav-item';
+  }
+
+  try {
+    renderPage(page, params);
+  } catch (e) {
+    showError('渲染错误: ' + e.message);
+  }
+  try { window.scrollTo(0, 0); } catch(x) {}
+}
+
+function goBack() {
+  if (state.navHistory.length > 0) {
+    var prev = state.navHistory.pop();
+    navigateTo(prev.page, prev.params);
+  } else {
+    navigateTo('home');
+  }
+}
+
+function renderPage(page, params) {
+  if (page === 'home') renderHome();
+  else if (page === 'record') renderRecord();
+  else if (page === 'symptoms') renderSymptoms();
+  else if (page === 'cycleDaily') renderCycleDaily(params);
+  else if (page === 'dayDetail') renderDayDetail(params);
+  else if (page === 'calendar') renderCalendar();
+  else if (page === 'history') renderHistory();
+  else if (page === 'backup') renderBackup();
+}
+
+/* ===== Home Page ===== */
+function renderHome() {
+  var cycle = getCurrentCycle();
+  var el = document.getElementById('page-home');
+
+  if (!cycle) {
+    var lastEnded = getLastEndedCycle();
+    var endedDays = 0;
+    var recentlyEnded = false;
+    if (lastEnded) {
+      endedDays = daysBetween(lastEnded.endDate, todayStr());
+      recentlyEnded = endedDays <= 3;
+    }
+
+    if (recentlyEnded) {
+      // Recently ended cycle - offer to continue
+      var stats = getCycleStats(lastEnded.id);
+      el.innerHTML = 
+        '<div class="predict-card" style="margin-bottom:12px">' +
+        '<div class="predict-title">🔔 上次经期刚结束</div>' +
+        '<div style="text-align:center;margin:8px 0">' +
+        '<div style="font-size:20px;font-weight:700;color:var(--primary-dark)">' + formatDate(lastEnded.startDate) + ' ~ ' + formatDate(lastEnded.endDate) + '</div>' +
+        '<div style="font-size:14px;color:var(--text-secondary);margin-top:4px">持续 ' + daysBetween(lastEnded.startDate, lastEnded.endDate) + ' 天 · ' + endedDays + ' 天前结束</div>' +
+        '</div></div>' +
+        '<div class="empty-state" style="padding:12px 20px">' +
+        '<div class="empty-icon" style="font-size:42px">🥺</div>' +
+        '<div class="empty-title" style="font-size:16px">是误触结束了吗？</div>' +
+        '<div class="empty-desc">按错了不用担心，可以重新打开上个周期，继续记录更换和症状。</div>' +
+        '<button class="btn btn-primary" style="max-width:260px;margin:8px auto" onclick="reopenLastEnded()">重新打开上个周期</button>' +
+        '<div style="margin-top:12px;font-size:13px;color:var(--text-tertiary)">—— 或者 ——</div>' +
+        '<button class="btn btn-secondary" style="max-width:260px;margin:8px auto" onclick="showStartCycleModal()">开始新周期</button>' +
+        '</div>';
+    } else {
+      el.innerHTML = 
+        '<div class="empty-state">' +
+        '<div class="empty-icon">🌸</div>' +
+        '<div class="empty-title">开始记录你的经期</div>' +
+        '<div class="empty-desc">点击下方按钮，记录本次来潮日期<br>数据仅保存在本机，他人无法查看</div>' +
+        '<button class="btn btn-primary" style="max-width:260px;margin:0 auto" onclick="showStartCycleModal()">开始新周期</button>' +
+        '</div>';
+    }
+    return;
+  }
+
+  var stats = getCycleStats(cycle.id);
+  var dayCount = daysBetween(cycle.startDate, todayStr());
+
+  // recent: last 5 changes
+  var recentCount = Math.min(5, cycle.changes.length);
+  var recent = [];
+  for (var i = cycle.changes.length - 1; i >= 0 && recent.length < recentCount; i--) {
+    recent.push(cycle.changes[i]);
+  }
+
+  // bleeding bars - compute max
+  var maxBl = 1;
+  for (var k = 0; k < BLEEDING.length; k++) {
+    if (stats.bleeding[BLEEDING[k].id] > maxBl) maxBl = stats.bleeding[BLEEDING[k].id];
+  }
+
+  var bleedingHtml = '';
+  for (var bi = 0; bi < BLEEDING.length; bi++) {
+    var b = BLEEDING[bi];
+    var cnt = stats.bleeding[b.id];
+    var w = cnt > 0 ? Math.max((cnt / maxBl) * 100, 8) : 0;
+    bleedingHtml += '<div class="bleeding-row"><div class="bleeding-name">' + b.label + '</div>' +
+      '<div class="bleeding-track"><div class="bleeding-fill" style="width:' + w + '%;background:' + b.color + '"></div></div>' +
+      '<div class="bleeding-count">' + cnt + '</div></div>';
+  }
+
+  var recentHtml = '';
+  if (recent.length > 0) {
+    recentHtml = '<div class="section-title">🕐 最近记录</div>';
+    for (var ri = 0; ri < recent.length; ri++) {
+      var ch = recent[ri];
+      var p = getProductById(ch.productId);
+      var bb = getBleedingById(ch.bleeding);
+      var pname = p ? p.short : '?';
+      var bname = bb ? bb.label : '?';
+      var bcolor = bb ? bb.color : '#999';
+      recentHtml += '<div class="recent-item"><div class="recent-time">' + (ch.time || '') + '</div>' +
+        '<div class="recent-product">' + pname + '</div>' +
+        '<div class="recent-bleeding" style="background:' + bcolor + '20;color:' + bcolor + '">' + bname + '</div></div>';
+    }
+  }
+
+  el.innerHTML = '<div class="card"><div class="cycle-info">' +
+    '<div class="cycle-day-num">第 ' + dayCount + ' 天</div>' +
+    '<div class="cycle-day-count">' + formatDate(cycle.startDate) + ' 来潮 · 进行中</div>' +
+    '</div>' +
+    '<div class="stats-row">' +
+    '<div class="stat-card"><div class="stat-num">' + stats.napkin + '</div><div class="stat-label">卫生巾</div></div>' +
+    '<div class="stat-card"><div class="stat-num">' + stats.pad + '</div><div class="stat-label">护垫</div></div>' +
+    '<div class="stat-card"><div class="stat-num">' + stats.tampon + '</div><div class="stat-label">棉条</div></div>' +
+    '<div class="stat-card"><div class="stat-num">' + stats.pants + '</div><div class="stat-label">安睡裤</div></div>' +
+    '</div></div>' +
+    '<div class="card"><div class="card-title">📊 出血量分布</div>' + bleedingHtml + '</div>';
+
+  // Prediction snippet (compact)
+  var prediction = predictNextPeriod();
+  if (prediction) {
+    el.innerHTML += '<div class="predict-card" style="cursor:pointer" onclick="nav(\'calendar\')">' +
+      '<div class="predict-title">🔮 经期预测</div>' +
+      '<div style="display:flex;align-items:center;gap:12px">' +
+      '<div style="flex:1;text-align:center"><div style="font-size:13px;color:var(--text-secondary)">平均周期</div><div style="font-size:22px;font-weight:700;color:var(--primary)">' + prediction.cycleLength + '天</div></div>' +
+      '<div style="width:1px;height:36px;background:rgba(232,101,122,0.2)"></div>' +
+      '<div style="flex:1;text-align:center"><div style="font-size:13px;color:var(--text-secondary)">下次预计</div><div style="font-size:14px;font-weight:700;color:var(--primary-dark)">' + formatDate(prediction.startDate) + '</div></div>' +
+      '<div style="width:1px;height:36px;background:rgba(232,101,122,0.2)"></div>' +
+      '<div style="flex:1;text-align:center"><div style="font-size:13px;color:var(--text-secondary)">持续约</div><div style="font-size:22px;font-weight:700;color:var(--primary)">' + prediction.periodLength + '天</div></div>' +
+      '</div></div>';
+  }
+
+  el.innerHTML +=
+    '<div class="btn-row">' +
+    '<button class="btn btn-secondary" onclick="nav(\'record\')">✏️ 记录更换</button>' +
+    '<button class="btn btn-secondary" onclick="nav(\'calendar\')">📅 经期日历</button>' +
+    '</div>' +
+    '<div class="btn-row" style="margin-top:8px">' +
+    '<button class="btn btn-secondary" onclick="nav(\'cycleDaily\',{cycleId:\'' + cycle.id + '\'})">📋 本期每日</button>' +
+    '<button class="btn btn-primary" onclick="showEndCycleModal(\'' + cycle.id + '\')">✓ 结束本期</button>' +
+    '</div>' +
+    recentHtml;
+}
+
+/* ===== Record Page ===== */
+function renderRecord() {
+  var el = document.getElementById('page-record');
+  var cycle = getCurrentCycle();
+  var editing = (state.editingCycleId && state.editingChangeId) ? true : false;
+  var editChange = null;
+  if (editing) {
+    editChange = getChangeById(state.editingCycleId, state.editingChangeId);
+    cycle = getCycleById(state.editingCycleId) || cycle;
+  }
+  var date = state.recordDate || (editChange ? editChange.date : todayStr());
+  var time = (editChange && editChange.time) ? editChange.time : nowTimeStr();
+  var note = (editChange && editChange.note) ? editChange.note : '';
+
+  // Set pre-selected product/bleeding from edit data or defaults
+  if (editChange) {
+    state.selectedProduct = editChange.productId;
+    state.selectedBleeding = editChange.bleeding;
+  } else {
+    state.selectedProduct = PRODUCTS[0].id;
+    state.selectedBleeding = BLEEDING[1].id;
+  }
+
+  if (!cycle) {
+    var lastEnded2 = getLastEndedCycle();
+    var recentlyEnded2 = false;
+    if (lastEnded2) {
+      var ed = daysBetween(lastEnded2.endDate, todayStr());
+      recentlyEnded2 = ed <= 3;
+    }
+    var reopenBtn = recentlyEnded2 ? '<button class="btn btn-secondary" style="max-width:200px;margin:8px auto 0" onclick="reopenLastEnded()">重新打开上个周期</button>' : '';
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">📝</div>' +
+      '<div class="empty-title">请先开始新周期</div>' +
+      '<div class="empty-desc">记录更换前需要先开始一个经期周期</div>' +
+      '<button class="btn btn-primary" style="max-width:200px;margin:16px auto 0" onclick="showStartCycleModal()">开始新周期</button>' +
+      reopenBtn + '</div>';
+    return;
+  }
+
+  var chipsHtml = '';
+  for (var i = 0; i < PRODUCTS.length; i++) {
+    var p = PRODUCTS[i];
+    var isSel = (state.selectedProduct === p.id) ? ' selected' : '';
+    chipsHtml += '<div class="chip' + isSel + '" data-product="' + p.id + '" onclick="selectProduct(this,\'' + p.id + '\')">' + p.label + '</div>';
+  }
+
+  var bleedingHtml = '';
+  for (var j = 0; j < BLEEDING.length; j++) {
+    var b = BLEEDING[j];
+    var isSel2 = (state.selectedBleeding === b.id);
+    var selCls = isSel2 ? ' selected' : '';
+    var selStyle = isSel2 ? ' style="background:' + b.color + ';border-color:' + b.color + ';color:#fff"' : '';
+    bleedingHtml += '<div class="bleeding-btn' + selCls + '" data-bleeding="' + b.id + '" onclick="selectBleeding(this,\'' + b.id + '\')"' + selStyle + '>' + b.label + '</div>';
+  }
+
+  var titleHtml = editing
+    ? '<div style="background:var(--primary-light);color:var(--primary-dark);padding:8px 14px;border-radius:8px;margin-bottom:12px;font-size:13px;text-align:center;font-weight:500">✎ 正在编辑记录 — 修改后点击保存</div>'
+    : '';
+  var btnLabel = editing ? '更新记录' : '保存记录';
+  var btnOnclick = editing ? 'saveChange(true)' : 'saveChange()';
+
+  el.innerHTML = titleHtml + '<div class="card"><div class="card-title">📅 更换时间</div>' +
+    '<div class="form-row"><div class="form-group"><div class="form-label">日期</div>' +
+    '<input type="text" class="form-input picker-input" id="recDate" value="' + date + '" readonly onclick="showDatePicker({current:this.value,onConfirm:function(v){document.getElementById(\'recDate\').value=v}})"></div>' +
+    '<div class="form-group"><div class="form-label">时间</div>' +
+    '<input type="text" class="form-input picker-input" id="recTime" value="' + time + '" readonly onclick="showTimePicker({current:this.value,onConfirm:function(v){document.getElementById(\'recTime\').value=v}})"></div></div></div>' +
+    '<div class="card"><div class="card-title">🩸 选择用品</div>' +
+    '<div class="chip-grid" id="productGrid">' + chipsHtml + '</div></div>' +
+    '<div class="card"><div class="card-title">💧 出血量</div>' +
+    '<div class="bleeding-grid" id="bleedingGrid">' + bleedingHtml + '</div></div>' +
+    '<div class="card"><div class="card-title">📝 备注（可选）</div>' +
+    '<textarea class="form-input" id="recNote" placeholder="记录这次更换的其他情况...">' + note + '</textarea></div>' +
+    '<button class="btn btn-primary" onclick="' + btnOnclick + '">' + btnLabel + '</button>' +
+    (editing ? '<button class="btn btn-secondary" style="margin-top:8px;border:1px solid var(--border)" onclick="cancelEdit()">取消编辑</button>' : '');
+}
+
+function selectProduct(el, id) {
+  var chips = document.getElementById('productGrid').getElementsByClassName('chip');
+  for (var i = 0; i < chips.length; i++) chips[i].className = 'chip';
+  el.className = 'chip selected';
+  state.selectedProduct = id;
+}
+
+function selectBleeding(el, id) {
+  var btns = document.getElementById('bleedingGrid').getElementsByClassName('bleeding-btn');
+  for (var i = 0; i < btns.length; i++) {
+    btns[i].className = 'bleeding-btn';
+    btns[i].style.cssText = '';
+  }
+  el.className = 'bleeding-btn selected';
+  var b = getBleedingById(id);
+  if (b) {
+    el.style.cssText = 'background:' + b.color + ';border-color:' + b.color + ';color:#fff';
+  }
+  state.selectedBleeding = id;
+}
+
+function saveChange(isEdit) {
+  if (!state.selectedProduct) { showToast('请选择用品'); return; }
+  if (!state.selectedBleeding) { showToast('请选择出血量'); return; }
+  var dateEl = document.getElementById('recDate');
+  var timeEl = document.getElementById('recTime');
+  var noteEl = document.getElementById('recNote');
+  if (!dateEl || !timeEl) return;
+  var date = dateEl.value;
+  var time = timeEl.value;
+  var note = noteEl ? noteEl.value.trim() : '';
+  var data = {date: date, time: time, productId: state.selectedProduct, bleeding: state.selectedBleeding, note: note};
+
+  if (isEdit && state.editingCycleId && state.editingChangeId) {
+    // Update existing record
+    updateChange(state.editingCycleId, state.editingChangeId, data);
+    vibrate();
+    showToast('✓ 已更新');
+    var backCycleId = state.editingCycleId;
+    cancelEdit(true);
+    nav('dayDetail', {cycleId: backCycleId, date: date});
+  } else {
+    // Create new record
+    var cycle = getCurrentCycle();
+    if (!cycle) return;
+    addChange(cycle.id, data);
+    vibrate();
+    showToast('✓ 已保存');
+    nav('home');
+  }
+}
+
+function cancelEdit(skipNav) {
+  var backCycleId = state.editingCycleId;
+  var editChange = (backCycleId && state.editingChangeId) ? getChangeById(backCycleId, state.editingChangeId) : null;
+  var backDate = editChange ? editChange.date : null;
+  state.editingCycleId = null;
+  state.editingChangeId = null;
+  state.selectedProduct = null;
+  state.selectedBleeding = null;
+  if (!skipNav) {
+    if (backCycleId && backDate) {
+      nav('dayDetail', {cycleId: backCycleId, date: backDate});
+    } else {
+      nav('home');
+    }
+  }
+}
+
+
+/* ===== Symptoms Page ===== */
+function renderSymptoms() {
+  var el = document.getElementById('page-symptoms');
+  var cycle = getCurrentCycle();
+  var date = state.symptomsDate || todayStr();
+  state.selectedSymptomsArr = [];
+
+  if (!cycle) {
+    var lastEnded3 = getLastEndedCycle();
+    var recentlyEnded3 = false;
+    if (lastEnded3) {
+      var ed2 = daysBetween(lastEnded3.endDate, todayStr());
+      recentlyEnded3 = ed2 <= 3;
+    }
+    var reopenBtn2 = recentlyEnded3 ? '<button class="btn btn-secondary" style="max-width:200px;margin:8px auto 0" onclick="reopenLastEnded()">重新打开上个周期</button>' : '';
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">🌡️</div>' +
+      '<div class="empty-title">请先开始新周期</div>' +
+      '<div class="empty-desc">症状打卡前需要先开始一个经期周期</div>' +
+      '<button class="btn btn-primary" style="max-width:200px;margin:16px auto 0" onclick="showStartCycleModal()">开始新周期</button>' +
+      reopenBtn2 + '</div>';
+    return;
+  }
+
+  var existing = cycle.symptoms[date];
+  if (existing && existing.selected) {
+    state.selectedSymptomsArr = existing.selected;
+  }
+
+  var checksHtml = '';
+  for (var i = 0; i < SYMPTOMS.length; i++) {
+    var s = SYMPTOMS[i];
+    var checked = arrayContains(state.selectedSymptomsArr, s.id);
+    var cls = checked ? 'chip selected' : 'chip';
+    checksHtml += '<div class="' + cls + '" data-symptom="' + s.id + '" onclick="toggleSymptom(this,\'' + s.id + '\')">' + s.label + '</div>';
+  }
+
+  var customVal = existing ? (existing.custom || '') : '';
+
+  el.innerHTML = '<div class="card"><div class="card-title">📅 日期</div>' +
+    '<input type="text" class="form-input picker-input" id="symDate" value="' + date + '" readonly onclick="showDatePicker({current:this.value,onConfirm:function(v){document.getElementById(\'symDate\').value=v}})"></div>' +
+    '<div class="card"><div class="card-title">🌡️ 今日症状</div>' +
+    '<div class="chip-grid" id="symptomGrid">' + checksHtml + '</div></div>' +
+    '<div class="card"><div class="card-title">📝 补充说明（可选）</div>' +
+    '<textarea class="form-input" id="symCustom" placeholder="记录今日身体其他感受...">' + customVal + '</textarea></div>' +
+    '<button class="btn btn-primary" onclick="saveSymptomsData()">保存症状</button>';
+
+  // bind date change
+  var dateEl = document.getElementById('symDate');
+  if (dateEl) {
+    dateEl.onchange = function() {
+      state.symptomsDate = this.value;
+      renderSymptoms();
+    };
+  }
+}
+
+function toggleSymptom(el, id) {
+  if (arrayContains(state.selectedSymptomsArr, id)) {
+    var arr = [];
+    for (var i = 0; i < state.selectedSymptomsArr.length; i++) {
+      if (state.selectedSymptomsArr[i] !== id) arr.push(state.selectedSymptomsArr[i]);
+    }
+    state.selectedSymptomsArr = arr;
+    el.className = 'chip';
+  } else {
+    state.selectedSymptomsArr.push(id);
+    el.className = 'chip selected';
+  }
+}
+
+function saveSymptomsData() {
+  var cycle = getCurrentCycle();
+  if (!cycle) return;
+  var dateEl = document.getElementById('symDate');
+  var customEl = document.getElementById('symCustom');
+  if (!dateEl) return;
+  var date = dateEl.value;
+  var custom = customEl ? customEl.value.trim() : '';
+  saveSymptoms(cycle.id, date, state.selectedSymptomsArr, custom);
+  vibrate();
+  showToast('✓ 症状已保存');
+  nav('home');
+}
+
+/* ===== Cycle Daily Page ===== */
+function renderCycleDaily(params) {
+  params = params || {};
+  var el = document.getElementById('page-cycleDaily');
+  var cycle = params.cycleId ? getCycleById(params.cycleId) : getCurrentCycle();
+  if (!cycle) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">没有找到周期</div></div>';
+    return;
+  }
+  var dates = getDateRange(cycle);
+  // reverse: newest first
+  var revDates = [];
+  for (var i = dates.length - 1; i >= 0; i--) revDates.push(dates[i]);
+  var ongoing = !cycle.endDate;
+  var stats = getCycleStats(cycle.id);
+
+  var html = '<div class="card"><div class="cycle-info">' +
+    '<div style="font-size:16px;font-weight:600">' + formatDateFull(cycle.startDate) +
+    (cycle.endDate ? ' ~ ' + formatDate(cycle.endDate) : ' ～ 进行中') + '</div>' +
+    '<div class="cycle-day-count" style="margin-top:4px">共 ' + dates.length + ' 天</div>' +
+    '<div style="margin-top:12px;display:flex;gap:6px;justify-content:center;flex-wrap:wrap">' +
+    '<span class="day-stat" style="background:#FFE5E9;color:#C94B63">卫生巾 ' + stats.napkin + '</span>' +
+    '<span class="day-stat" style="background:#FCEEF1;color:#E8657A">护垫 ' + stats.pad + '</span>' +
+    '<span class="day-stat" style="background:#F3E5F5;color:#8E24AA">棉条 ' + stats.tampon + '</span>' +
+    '<span class="day-stat" style="background:#E8F5E9;color:#2E7D32">安睡裤 ' + stats.pants + '</span>' +
+    '</div></div></div>';
+
+  if (ongoing) {
+    html += '<button class="btn btn-primary" style="margin-bottom:12px" onclick="showEndCycleModal(\'' + cycle.id + '\')">✓ 结束本期</button>';
+  } else {
+    html += '<div class="predict-card" style="margin-bottom:12px;text-align:center">' +
+      '<div style="font-size:14px;color:var(--text-secondary)">此周期已结束 · 持续 ' + dates.length + ' 天</div>' +
+      '<button class="btn btn-secondary" style="margin:10px auto 0;max-width:260px" onclick="reopenAndGo(\'' + cycle.id + '\')">重新打开此周期，继续记录</button>' +
+      '</div>';
+  }
+
+  html += '<div class="section-title">📅 每日记录</div>';
+
+  for (var di = 0; di < revDates.length; di++) {
+    var d = revDates[di];
+    var dStats = getDayStats(cycle.id, d);
+    var hasRecords = dStats.changes.length > 0;
+    var sym = cycle.symptoms[d];
+    var statChips = '';
+    if (hasRecords) {
+      if (dStats.napkin > 0) statChips += '<span class="day-stat" style="background:#FFE5E9;color:#C94B63">卫生巾 ' + dStats.napkin + '</span>';
+      if (dStats.pad > 0) statChips += '<span class="day-stat" style="background:#FCEEF1;color:#E8657A">护垫 ' + dStats.pad + '</span>';
+      if (dStats.tampon > 0) statChips += '<span class="day-stat" style="background:#F3E5F5;color:#8E24AA">棉条 ' + dStats.tampon + '</span>';
+      if (dStats.pants > 0) statChips += '<span class="day-stat" style="background:#E8F5E9;color:#2E7D32">安睡裤 ' + dStats.pants + '</span>';
+    }
+    var symChip = '';
+    if (sym && sym.selected && sym.selected.length > 0) {
+      symChip = '<span class="day-stat" style="background:#E3F2FD;color:#1565C0">症状 ' + sym.selected.length + '</span>';
+    }
+    var todayStyle = isToday(d) ? ' style="border:2px solid #E8657A"' : '';
+    var dayLabel = formatDate(d) + (isToday(d) ? '（今天）' : '') + ' ' + getWeekday(d);
+
+    html += '<div class="day-card"' + todayStyle + ' onclick="nav(\'dayDetail\',{cycleId:\'' + cycle.id + '\',date:\'' + d + '\'})">' +
+      '<div class="day-card-header"><div class="day-label">' + dayLabel + '</div>' +
+      '<div style="font-size:12px;color:#999">' + dStats.changes.length + ' 次更换</div></div>' +
+      '<div class="day-stats-row">' + statChips + symChip +
+      ((hasRecords || symChip) ? '' : '<span style="font-size:13px;color:#bbb">无记录</span>') + '</div></div>';
+  }
+
+  el.innerHTML = html;
+}
+
+/* ===== Day Detail Page ===== */
+function renderDayDetail(params) {
+  params = params || {};
+  var el = document.getElementById('page-dayDetail');
+  var cycle = getCycleById(params.cycleId);
+  if (!cycle) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">📄</div><div class="empty-title">没有找到数据</div></div>';
+    return;
+  }
+  var date = params.date;
+  var stats = getDayStats(cycle.id, date);
+  var sym = cycle.symptoms[date];
+
+  // sort changes by time
+  var changes = stats.changes.slice();
+  changes.sort(function(a, b) {
+    var at = a.time || '';
+    var bt = b.time || '';
+    if (at < bt) return -1;
+    if (at > bt) return 1;
+    return 0;
+  });
+
+  var changesHtml = '';
+  if (changes.length === 0) {
+    changesHtml = '<div style="text-align:center;color:#999;padding:20px;font-size:14px">当天没有更换记录</div>';
+  } else {
+    for (var i = 0; i < changes.length; i++) {
+      var ch = changes[i];
+      var p = getProductById(ch.productId);
+      var b = getBleedingById(ch.bleeding);
+      var pname = p ? p.short : '?';
+      var bname = b ? b.label : '?';
+      var bcolor = b ? b.color : '#999';
+      var noteHtml = ch.note ? '<div class="change-note">' + ch.note + '</div>' : '';
+      changesHtml += '<div class="change-record"><div class="change-time">' + (ch.time || '') + '</div>' +
+        '<div class="change-info"><div class="change-product">' + pname + '</div>' + noteHtml + '</div>' +
+        '<div class="change-bleeding" style="background:' + bcolor + '20;color:' + bcolor + ';margin-right:4px">' + bname + '</div>' +
+        '<div class="change-edit" onclick="startEditChange(\'' + cycle.id + '\',\'' + ch.id + '\')">✎</div>' +
+        '<div class="change-delete" onclick="confirmDeleteChange(\'' + cycle.id + '\',\'' + ch.id + '\')">✕</div></div>';
+    }
+  }
+
+  var symHtml = '';
+  if (sym) {
+    var symLabelsHtml = '';
+    if (sym.selected && sym.selected.length > 0) {
+      for (var si = 0; si < sym.selected.length; si++) {
+        var ss = getSymptomById(sym.selected[si]);
+        var sname = ss ? ss.label : sym.selected[si];
+        symLabelsHtml += '<span class="day-stat" style="background:#E3F2FD;color:#1565C0">' + sname + '</span>';
+      }
+    }
+    var customHtml = sym.custom ? '<div style="font-size:14px;color:#666;line-height:1.6;background:#F8F9FA;padding:10px;border-radius:8px">' + sym.custom + '</div>' : '';
+    symHtml = '<div class="card"><div class="card-title">🌡️ 当日症状</div>' +
+      '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:' + (sym.custom ? '8px' : '0') + '">' + symLabelsHtml + '</div>' +
+      customHtml + '</div>';
+  }
+
+  el.innerHTML = '<div class="card"><div class="cycle-info">' +
+    '<div style="font-size:18px;font-weight:600">' + formatDateFull(date) + '</div>' +
+    '<div class="cycle-day-count">' + getWeekday(date) + (isToday(date) ? ' · 今天' : '') + '</div>' +
+    '</div>' +
+    '<div class="stats-row">' +
+    '<div class="stat-card"><div class="stat-num">' + stats.napkin + '</div><div class="stat-label">卫生巾</div></div>' +
+    '<div class="stat-card"><div class="stat-num">' + stats.pad + '</div><div class="stat-label">护垫</div></div>' +
+    '<div class="stat-card"><div class="stat-num">' + stats.tampon + '</div><div class="stat-label">棉条</div></div>' +
+    '<div class="stat-card"><div class="stat-num">' + stats.pants + '</div><div class="stat-label">安睡裤</div></div>' +
+    '</div></div>' +
+    '<div class="section-title">🩸 当日更换记录</div>' + changesHtml + symHtml;
+}
+
+function confirmDeleteChange(cycleId, changeId) {
+  showModal({
+    title: '删除记录',
+    body: '确定要删除这条更换记录吗？',
+    confirmText: '删除',
+    danger: true,
+    onConfirm: function() {
+      deleteChange(cycleId, changeId);
+      vibrate();
+      showToast('已删除');
+      nav('dayDetail', {cycleId: cycleId, date: state.pageParams.date});
+    }
+  });
+}
+
+function startEditChange(cycleId, changeId) {
+  state.editingCycleId = cycleId;
+  state.editingChangeId = changeId;
+  nav('record');
+}
+
+/* ===== History Page ===== */
+function renderHistory() {
+  var el = document.getElementById('page-history');
+  var cyclesSrc = state.data.cycles;
+  var cycles = [];
+  for (var i = cyclesSrc.length - 1; i >= 0; i--) cycles.push(cyclesSrc[i]);
+
+  if (cycles.length === 0) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">📅</div>' +
+      '<div class="empty-title">还没有历史记录</div>' +
+      '<div class="empty-desc">开始新周期后会自动保存历史</div></div>';
+    return;
+  }
+
+  var html = '<div class="section-title">📋 全部经期</div>';
+  for (var j = 0; j < cycles.length; j++) {
+    var c = cycles[j];
+    var num = cycles.length - j;
+    var stats = getCycleStats(c.id);
+    var ongoing = !c.endDate;
+    var duration = c.endDate ? daysBetween(c.startDate, c.endDate) + '天' : '进行中';
+    var badgeCls = ongoing ? 'cycle-badge ongoing' : 'cycle-badge';
+    var badgeText = ongoing ? '进行中' : '已结束';
+    var durationHtml = c.endDate
+      ? '<div class="cycle-duration"><span class="cycle-duration-num">' + daysBetween(c.startDate, c.endDate) + '</span><span class="cycle-duration-label">天经期</span></div>'
+      : '';
+    var reopenAction = '';
+    if (c.endDate) {
+      reopenAction = '<div style="margin-top:6px"><span style="font-size:12px;color:var(--primary);text-decoration:underline;cursor:pointer;display:inline-block;padding:2px 6px" onclick="event.stopPropagation();reopenAndGo(\'' + c.id + '\')">重新打开此周期</span></div>';
+    }
+    html += '<div class="cycle-card" onclick="nav(\'cycleDaily\',{cycleId:\'' + c.id + '\'})">' +
+      '<div class="cycle-card-header"><div class="cycle-num">第 ' + num + ' 个周期</div>' +
+      '<div class="' + badgeCls + '">' + badgeText + '</div></div>' +
+      '<div class="cycle-dates">' + formatDate(c.startDate) +
+      (c.endDate ? ' ~ ' + formatDate(c.endDate) : ' ～') + '</div>' +
+      durationHtml +
+      reopenAction +
+      '<div class="cycle-stats">' +
+      '<span class="cycle-stat">🩸 卫生巾 ' + stats.napkin + '</span>' +
+      '<span class="cycle-stat">🩹 护垫 ' + stats.pad + '</span>' +
+      '<span class="cycle-stat">🧻 棉条 ' + stats.tampon + '</span>' +
+      '<span class="cycle-stat">👖 安睡裤 ' + stats.pants + '</span>' +
+      '<span class="cycle-stat">🔄 ' + stats.total + ' 次</span>' +
+      '</div></div>';
+  }
+  el.innerHTML = html;
+}
+
+/* ===== Backup Page ===== */
+function renderBackup() {
+  var el = document.getElementById('page-backup');
+  var cycleCount = state.data.cycles.length;
+  var changeCount = 0;
+  for (var i = 0; i < state.data.cycles.length; i++) {
+    changeCount += state.data.cycles[i].changes.length;
+  }
+  el.innerHTML = '<div class="card"><div class="card-title">💾 当前数据</div>' +
+    '<div style="display:flex;gap:10px;justify-content:space-around;text-align:center">' +
+    '<div><div style="font-size:24px;font-weight:700;color:#E8657A">' + cycleCount + '</div><div style="font-size:13px;color:#999">个周期</div></div>' +
+    '<div><div style="font-size:24px;font-weight:700;color:#E8657A">' + changeCount + '</div><div style="font-size:13px;color:#999">条更换</div></div>' +
+    '</div></div>' +
+
+    '<div class="card" style="border:2px solid #FFD1DC">' +
+    '<div class="card-title">📤 导出为文件（推荐）</div>' +
+    '<div style="font-size:13px;color:#666;line-height:1.6;margin-bottom:12px">一键导出 .json 文件，保存到手机下载目录。<br>换手机时，把文件发到微信/QQ/云盘，新手机下载后导入即可。</div>' +
+    '<button class="btn btn-primary mb-12" onclick="exportToJSONFile()">导出为 JSON 文件</button>' +
+    '<div style="font-size:12px;color:#999;padding:8px 12px;background:#f8f8f8;border-radius:8px;line-height:1.5">' +
+    '<strong>步骤：</strong>导出 → 文件保存到下载目录 → 通过微信/数据线传到新手机 → 在新手机点击「选择文件导入」' +
+    '</div></div>' +
+
+    '<div class="card" style="border:2px solid #C8E6C9">' +
+    '<div class="card-title" style="color:#2E7D32">📥 从文件导入（推荐）</div>' +
+    '<div style="font-size:13px;color:#666;line-height:1.6;margin-bottom:12px">选择旧手机导出的 .json 文件，一键恢复所有数据。</div>' +
+    '<button class="btn btn-primary mb-12" onclick="importFromFile()">选择文件导入</button>' +
+    '<input type="file" id="importFileInput" accept=".json" style="display:none" onchange="handleImportFile(event)">' +
+    '<div style="font-size:12px;color:#999;padding:8px 12px;background:#f8f8f8;border-radius:8px;line-height:1.5">' +
+    '<strong>提示：</strong>微信里收到文件后，先「用其他应用打开」→「保存到下载」，再回来点击上方按钮选择文件。' +
+    '</div></div>' +
+
+    '<div class="card" style="background:#fafafa">' +
+    '<div class="card-title" style="color:#999">📋 高级：文本方式</div>' +
+    '<div style="font-size:13px;color:#999;line-height:1.6;margin-bottom:12px">如果文件方式不可用，可用以下文本方式导出/恢复。</div>' +
+    '<button class="btn btn-secondary mb-12" onclick="generateBackup()" style="font-size:13px">生成备份文本</button>' +
+    '<textarea class="backup-textarea mb-12" id="exportText" placeholder="备份文本将显示在这里..." readonly style="background:#f5f5f5"></textarea>' +
+    '<div class="btn-row">' +
+    '<button class="btn btn-secondary" style="font-size:13px" onclick="copyBackup()">📋 复制</button>' +
+    '<button class="btn btn-secondary" style="font-size:13px" onclick="downloadBackup()">💾 下载文本</button>' +
+    '</div>' +
+    '<textarea class="backup-textarea mb-12" id="importText" placeholder="在此粘贴备份文本..." style="background:#f5f5f5"></textarea>' +
+    '<button class="btn btn-secondary" style="font-size:13px" onclick="importBackup()">从文本恢复</button></div>' +
+
+    '<div class="card" style="border:2px solid #FFCDD2">' +
+    '<div class="card-title" style="color:#E53935">⚠️ 危险操作</div>' +
+    '<div style="font-size:13px;color:#666;line-height:1.6;margin-bottom:12px">清除所有数据，且不可撤销。建议先备份再清除。</div>' +
+    '<button class="btn btn-danger" onclick="confirmClearAll()">清除所有数据</button></div>' +
+
+    '<div style="text-align:center;padding:16px 0 8px;color:#ccc;font-size:12px">经期记录 v1.2.1 · 数据仅保存在本机</div>';
+}
+
+function generateBackup() {
+  try {
+    var json = JSON.stringify(state.data);
+    // Use btoa for ASCII-safe encoding
+    var b64 = btoa(unescape(encodeURIComponent(json)));
+    var backup = 'PERIOD_BACKUP_V1:' + b64;
+    var ta = document.getElementById('exportText');
+    if (ta) ta.value = backup;
+    showToast('✓ 备份文本已生成');
+  } catch (e) {
+    showToast('生成失败: ' + e.message);
+  }
+}
+
+function copyBackup() {
+  var ta = document.getElementById('exportText');
+  if (!ta) return;
+  var text = ta.value;
+  if (!text) { showToast('请先生成备份文本'); return; }
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function() {
+        showToast('✓ 已复制到剪贴板');
+      }).catch(function() {
+        fallbackCopy(ta);
+      });
+    } else {
+      fallbackCopy(ta);
+    }
+  } catch (e) {
+    fallbackCopy(ta);
+  }
+}
+
+function fallbackCopy(ta) {
+  try {
+    ta.focus();
+    ta.select();
+    var ok = document.execCommand('copy');
+    showToast(ok ? '✓ 已复制' : '复制失败，请手动复制');
+  } catch (e) {
+    showToast('复制失败，请手动复制');
+  }
+}
+
+function downloadBackup() {
+  var ta = document.getElementById('exportText');
+  if (!ta) return;
+  var text = ta.value;
+  if (!text) { showToast('请先生成备份文本'); return; }
+  try {
+    var blob = new Blob([text], {type: 'text/plain;charset=utf-8'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'period_backup.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+    showToast('✓ 已下载');
+  } catch (e) {
+    showToast('下载失败: ' + e.message);
+  }
+}
+
+function importBackup() {
+  var ta = document.getElementById('importText');
+  if (!ta) return;
+  var text = ta.value.trim();
+  if (!text) { showToast('请先粘贴备份文本'); return; }
+  try {
+    var jsonStr;
+    if (text.indexOf('PERIOD_BACKUP_V1:') === 0) {
+      var b64 = text.substring('PERIOD_BACKUP_V1:'.length);
+      jsonStr = decodeURIComponent(escape(atob(b64)));
+    } else {
+      jsonStr = text;
+    }
+    var data = JSON.parse(jsonStr);
+    var count = (data && data.cycles) ? data.cycles.length : 0;
+    showModal({
+      title: '确认恢复',
+      body: '检测到 ' + count + ' 个周期的数据。<br>恢复将<strong style="color:#E53935">替换</strong>当前所有数据，是否继续？',
+      confirmText: '确认恢复',
+      onConfirm: function() {
+        state.data = data;
+        saveData();
+        vibrate();
+        showToast('✓ 数据已恢复');
+        nav('home');
+      }
+    });
+  } catch (e) {
+    showToast('备份文本格式错误: ' + e.message);
+  }
+}
+
+function exportToJSONFile() {
+  var json = JSON.stringify(state.data, null, 2);
+  var date = new Date();
+  var y = date.getFullYear();
+  var m = String(date.getMonth() + 1);
+  if (m.length < 2) m = '0' + m;
+  var d = String(date.getDate());
+  if (d.length < 2) d = '0' + d;
+  var h = String(date.getHours());
+  if (h.length < 2) h = '0' + h;
+  var min = String(date.getMinutes());
+  if (min.length < 2) min = '0' + min;
+  var filename = '经期记录_' + y + '-' + m + '-' + d + '_' + h + '-' + min + '.json';
+
+  var isNative = (typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform && Capacitor.isNativePlatform());
+
+  if (isNative && Capacitor.Plugins.JsonExport) {
+    // Native: show options dialog
+    showExportDialog(filename, json);
+  } else {
+    // Web: direct download
+    webDownloadJson(filename, json);
+  }
+
+  // ===== Export options bottom sheet =====
+  function showExportDialog(fname, fcontent) {
+    // Remove any existing dialog
+    var existing = document.getElementById('export-dialog-overlay');
+    if (existing) existing.remove();
+
+    var overlay = document.createElement('div');
+    overlay.id = 'export-dialog-overlay';
+    overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.45);z-index:99999;display:flex;align-items:flex-end;justify-content:center;transition:opacity 0.2s;';
+
+    var sheet = document.createElement('div');
+    sheet.style.cssText = 'background:#fff;width:100%;max-width:500px;border-radius:16px 16px 0 0;padding:24px 20px calc(24px + env(safe-area-inset-bottom));box-shadow:0 -4px 20px rgba(0,0,0,0.1);';
+
+    // Title
+    var title = document.createElement('div');
+    title.style.cssText = 'font-size:18px;font-weight:600;color:#333;text-align:center;margin-bottom:6px;';
+    title.textContent = '导出JSON文件';
+    sheet.appendChild(title);
+
+    var subtitle = document.createElement('div');
+    subtitle.style.cssText = 'font-size:13px;color:#999;text-align:center;margin-bottom:20px;word-break:break-all;';
+    subtitle.textContent = fname;
+    sheet.appendChild(subtitle);
+
+    // Option 1: Share
+    var btnShare = document.createElement('button');
+    btnShare.style.cssText = 'width:100%;padding:15px;margin-bottom:12px;border:none;border-radius:12px;background:linear-gradient(135deg,#E8657A,#F0909E);color:#fff;font-size:16px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;';
+    btnShare.innerHTML = '<span>分享给好友</span>';
+    btnShare.onclick = function() {
+      overlay.remove();
+      Capacitor.Plugins.JsonExport.share({
+        filename: fname,
+        content: fcontent
+      }).then(function() {
+        showToast('已打开分享面板');
+      }).catch(function() {
+        webDownloadJson(fname, fcontent);
+      });
+    };
+    sheet.appendChild(btnShare);
+
+    // Option 2: Save to phone (choose location)
+    var btnSave = document.createElement('button');
+    btnSave.style.cssText = 'width:100%;padding:15px;margin-bottom:12px;border:2px solid #E8657A;border-radius:12px;background:#fff;color:#E8657A;font-size:16px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;';
+    btnSave.innerHTML = '<span>保存到手机（可选择位置）</span>';
+    btnSave.onclick = function() {
+      overlay.remove();
+      showToast('正在打开文件管理器...');
+      Capacitor.Plugins.JsonExport.saveAs({
+        filename: fname,
+        content: fcontent
+      }).then(function(result) {
+        var path = (result && result.path) ? result.path : '';
+        // Make path more readable
+        if (path && path.indexOf('%2F') !== -1) {
+          path = decodeURIComponent(path.replace(/\+/g, ' '));
+        }
+        showToast('已保存到：' + path);
+      }).catch(function(err) {
+        var msg = (err && err.message) ? err.message : '';
+        if (msg.indexOf('canceled') !== -1) {
+          // User canceled — no action
+          return;
+        }
+        showToast('保存失败: ' + msg);
+        webDownloadJson(fname, fcontent);
+      });
+    };
+    sheet.appendChild(btnSave);
+
+    // Cancel button
+    var btnCancel = document.createElement('button');
+    btnCancel.style.cssText = 'width:100%;padding:15px;border:none;border-radius:12px;background:#f5f5f5;color:#666;font-size:16px;cursor:pointer;';
+    btnCancel.textContent = '取消';
+    btnCancel.onclick = function() { overlay.remove(); };
+    sheet.appendChild(btnCancel);
+
+    overlay.appendChild(sheet);
+    // Click outside to dismiss
+    overlay.addEventListener('click', function(e) {
+      if (e.target === overlay) overlay.remove();
+    });
+    document.body.appendChild(overlay);
+  }
+
+  // ===== Web download (browser fallback) =====
+  function webDownloadJson(fname, fcontent) {
+    try {
+      var blob = new Blob([fcontent], {type: 'application/json;charset=utf-8'});
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = fname;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+      showToast('已导出: ' + fname);
+    } catch (e) {
+      showToast('导出失败: ' + e.message);
+    }
+  }
+}
+
+function importFromFile() {
+  var input = document.getElementById('importFileInput');
+  if (!input) return;
+  input.value = '';
+  input.click();
+}
+
+function handleImportFile(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var content = e.target.result;
+      var data = JSON.parse(content);
+      var count = (data && data.cycles) ? data.cycles.length : 0;
+      showModal({
+        title: '确认恢复',
+        body: '检测到 ' + count + ' 个周期的数据。<br>恢复将<strong style="color:#E53935">替换</strong>当前所有数据，是否继续？',
+        confirmText: '确认恢复',
+        onConfirm: function() {
+          state.data = data;
+          saveData();
+          vibrate();
+          showToast('✓ 数据已恢复');
+          nav('home');
+        }
+      });
+    } catch (err) {
+      showToast('文件格式错误: ' + err.message);
+    }
+  };
+  reader.onerror = function() {
+    showToast('读取文件失败');
+  };
+  reader.readAsText(file);
+}
+
+function confirmClearAll() {
+  showModal({
+    title: '清除所有数据',
+    body: '<strong style="color:#E53935">警告</strong>：这将永久删除所有周期记录、更换记录和症状数据，且不可撤销！<br><br>建议先导出备份再清除。',
+    confirmText: '确认清除',
+    danger: true,
+    onConfirm: function() {
+      state.data = {cycles: []};
+      saveData();
+      vibrate();
+      showToast('所有数据已清除');
+      nav('home');
+    }
+  });
+}
+
+/* ===== Modals ===== */
+function showStartCycleModal() {
+  showModal({
+    title: '开始新周期',
+    body: '<div class="form-group" style="margin:0"><div class="form-label">来潮日期</div>' +
+      '<input type="text" class="form-input picker-input" name="startDate" id="modalStartDate" value="' + todayStr() + '" readonly onclick="showDatePicker({current:this.value,onConfirm:function(v){document.getElementById(\'modalStartDate\').value=v}})"></div>',
+    confirmText: '开始',
+    onConfirm: function(vals) {
+      if (!vals.startDate) { showToast('请选择日期'); return; }
+      createCycle(vals.startDate);
+      vibrate();
+      showToast('✓ 新周期已开始');
+      nav('home');
+    }
+  });
+}
+
+function reopenLastEnded() {
+  var last = getLastEndedCycle();
+  if (!last) { showToast('没有找到可恢复的周期'); return; }
+  reopenCycle(last.id);
+  vibrate();
+  showToast('✓ 周期已重新打开，可以继续记录');
+  nav('home');
+}
+
+function reopenAndGo(cycleId) {
+  reopenCycle(cycleId);
+  vibrate();
+  showToast('✓ 周期已重新打开，可以继续记录');
+  nav('cycleDaily', {cycleId: cycleId});
+}
+
+function showEndCycleModal(cycleId) {
+  var cycle = getCycleById(cycleId);
+  if (!cycle) return;
+  showModal({
+    title: '结束本期',
+    body: '<div style="margin-bottom:10px;font-size:14px;color:var(--text-secondary);text-align:center">确定本次经期已经结束了吗？<br>结束后将无法继续记录更换。<br>如果误触了，确认后可以立即撤销。</div>' +
+      '<div class="form-group" style="margin:0"><div class="form-label">经期结束日期</div>' +
+      '<input type="text" class="form-input picker-input" name="endDate" id="modalEndDate" value="' + todayStr() + '" readonly onclick="showDatePicker({current:this.value,onConfirm:function(v){document.getElementById(\'modalEndDate\').value=v}})"></div>',
+    confirmText: '确认结束',
+    onConfirm: function(vals) {
+      if (!vals.endDate) { showToast('请选择日期'); return; }
+      if (vals.endDate < cycle.startDate) { showToast('结束日期不能早于开始日期'); return; }
+      var oldEndDate = cycle.endDate;
+      endCycle(cycleId, vals.endDate);
+      vibrate();
+      showUndoToast('✓ 本期已结束', '撤销', function() {
+        // Undo: reopen the cycle
+        reopenCycle(cycleId);
+        vibrate();
+        showToast('✓ 已撤销，周期已恢复');
+        nav('home');
+      });
+      nav('home');
+    }
+  });
+}
+
+/* ===== Init ===== */
+function init() {
+  try {
+    // Check localStorage first
+    checkStorage();
+    loadData();
+
+    // Init calendar state
+    var now = new Date();
+    state.calendarYear = now.getFullYear();
+    state.calendarMonth = now.getMonth();
+
+    // Confirm JS is running - replace static loading content
+    var home = document.getElementById('page-home');
+    if (home) {
+      home.setAttribute('data-js-loaded', 'v3');
+    }
+
+    // Bind modal overlay
+    var mo = document.getElementById('modalOverlay');
+    if (mo) {
+      mo.onclick = function(e) {
+        if (e.target === mo) hideModal();
+      };
+    }
+
+    // Show storage warning if unavailable
+    if (!LOCALSTORAGE_AVAILABLE) {
+      if (home) {
+        home.innerHTML = '<div style="text-align:center;padding:60px 20px;color:#E53935">' +
+          '<div style="font-size:48px">⚠️</div>' +
+          '<div style="margin-top:16px;font-size:16px;font-weight:600">本地存储不可用</div>' +
+          '<div style="margin-top:8px;font-size:13px;color:#666;line-height:1.8">您的浏览器禁用了本地存储（localStorage），应用需要存储功能来保存数据。<br><br>请尝试：<br>1. 关闭无痕/隐私模式<br>2. 在浏览器设置中允许网站数据<br>3. 使用Chrome/Safari等标准浏览器打开</div>' +
+          '<button class="btn btn-primary" style="margin-top:20px;max-width:200px" onclick="location.reload()">刷新重试</button>' +
+          '</div>';
+        return;
+      }
+    }
+
+    navigateTo('home');
+  } catch (e) {
+    showError('初始化错误: ' + e.message);
+  }
+}
+
+// Run init
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+
+/* ===== PWA Service Worker ===== */
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('service-worker.js').then(function(reg) {
+    console.log('SW registered: ' + reg.scope);
+  }).catch(function(err) {
+    console.log('SW registration failed: ' + err.message);
+  });
+}
+
+/* ===== PWA Install Prompt ===== */
+var PWA_INSTALL_PROMPT = null;
+var PWA_INSTALL_SHOWN = false;
+
+window.addEventListener('beforeinstallprompt', function(e) {
+  e.preventDefault();
+  PWA_INSTALL_PROMPT = e;
+  if (!PWA_INSTALL_SHOWN) {
+    showInstallBanner();
+  }
+});
+
+function showInstallBanner() {
+  if (PWA_INSTALL_SHOWN) return;
+  PWA_INSTALL_SHOWN = true;
+  var existing = document.getElementById('installBanner');
+  if (existing) existing.parentNode.removeChild(existing);
+
+  var banner = document.createElement('div');
+  banner.id = 'installBanner';
+  banner.style.cssText = 'position:fixed;bottom:calc(var(--nav-h) + 8px);left:8px;right:8px;z-index:9998;background:#fff;border-radius:14px;box-shadow:0 4px 20px rgba(0,0,0,0.15);padding:14px 16px;display:flex;align-items:center;gap:12px;animation:slideUp 0.3s ease;';
+  banner.innerHTML = '<div style="flex:1"><div style="font-size:15px;font-weight:600;color:#2D2D2D">添加到主屏幕</div>' +
+    '<div style="font-size:13px;color:#666;margin-top:2px">像原生App一样使用，离线也能打开</div></div>' +
+    '<button id="installBtn" style="background:var(--primary-gradient);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:14px;font-weight:600;cursor:pointer;flex-shrink:0;">安装</button>' +
+    '<button onclick="hideInstallBanner()" style="background:none;border:none;font-size:20px;color:#999;cursor:pointer;padding:0 4px;flex-shrink:0;">&times;</button>';
+  document.body.appendChild(banner);
+
+  document.getElementById('installBtn').onclick = function() {
+    if (PWA_INSTALL_PROMPT) {
+      PWA_INSTALL_PROMPT.prompt();
+      PWA_INSTALL_PROMPT.userChoice.then(function(result) {
+        if (result.outcome === 'accepted') {
+          console.log('PWA installed');
+        }
+        PWA_INSTALL_PROMPT = null;
+      });
+    } else {
+      showToast('iOS用户：请用 Safari 打开，点击"分享"→"添加到主屏幕"');
+    }
+    hideInstallBanner();
+  };
+}
+
+function hideInstallBanner() {
+  var banner = document.getElementById('installBanner');
+  if (banner) {
+    banner.style.animation = 'slideDown 0.2s ease forwards';
+    setTimeout(function() { banner.parentNode.removeChild(banner); }, 200);
+  }
+}
+
+/* ===== Handle iOS standalone / shortcut navigation ===== */
+window.addEventListener('load', function() {
+  // Handle shortcut deep links
+  var url = new URL(window.location.href);
+  var source = url.searchParams.get('source');
+  if (source === 'shortcut_record') {
+    navigateTo('record');
+  } else if (source === 'shortcut_symptoms') {
+    navigateTo('symptoms');
+  }
+});
+
+/* ===== iOS Standalone Detection ===== */
+function isIOSStandalone() {
+  return window.navigator.standalone === true;
+}
+function isDisplayStandalone() {
+  return window.matchMedia && window.matchMedia('(display-mode: standalone)').matches;
+}
+</script>
+</body>
+</html>
