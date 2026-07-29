@@ -67,7 +67,7 @@
   --safe-bottom:env(safe-area-inset-bottom,0px);
   --max-w:500px;
 }
-html{font-size:16px;-webkit-text-size-adjust:100%;background:#E8657A}
+html{font-size:16px;-webkit-text-size-adjust:100%}
 body{
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Helvetica Neue",Helvetica,Arial,sans-serif;
   background:var(--bg);
@@ -162,10 +162,8 @@ body.no-nav .bottom-nav{display:none}
   padding:16px;margin-bottom:12px;
 }
 .card-title{
-  font-size:14px;font-weight:600;color:var(--primary-dark);
-  margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:6px;
-  background:linear-gradient(135deg,#FFF0F5,#FFF5F7);
-  padding:8px 14px;border-radius:10px;
+  font-size:14px;font-weight:600;color:var(--text-secondary);
+  margin-bottom:12px;display:flex;align-items:center;gap:6px;
 }
 
 /* ===== Buttons ===== */
@@ -854,7 +852,7 @@ window.addEventListener('error', function(e) {
 });
 
 /* ===== State ===== */
-var APP_VERSION = '1.5.8';
+var APP_VERSION = '1.2.8';
 
 /* JS-level cache busting: if version changed, force reload */
 (function() {
@@ -908,6 +906,7 @@ function loadData() {
       if (!state.data.cycles || !state.data.cycles.length) {
         state.data = {cycles: []};
       }
+      normalizeData();
     }
   } catch (e) {
     state.data = {cycles: []};
@@ -922,6 +921,29 @@ function saveData() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state.data));
   } catch (e) {
     showToast('保存失败，存储空间可能不足');
+  }
+}
+
+// 将旧版「每天单条症状对象」迁移为「每天多条症状记录数组」，保证已有数据不丢失
+function normalizeData() {
+  if (!state.data || !state.data.cycles) return;
+  for (var i = 0; i < state.data.cycles.length; i++) {
+    var c = state.data.cycles[i];
+    if (!c.symptoms) { c.symptoms = {}; continue; }
+    for (var date in c.symptoms) {
+      var s = c.symptoms[date];
+      if (s && !Array.isArray(s)) {
+        c.symptoms[date] = [{selected: s.selected || [], custom: s.custom || ''}];
+      } else if (Array.isArray(s)) {
+        for (var j = 0; j < s.length; j++) {
+          if (!s[j] || typeof s[j] !== 'object') s[j] = {selected: [], custom: ''};
+          else {
+            if (!s[j].selected) s[j].selected = [];
+            if (typeof s[j].custom !== 'string') s[j].custom = '';
+          }
+        }
+      }
+    }
   }
 }
 
@@ -1022,12 +1044,18 @@ function updateChange(cycleId, changeId, data) {
   }
 }
 
-function saveSymptoms(cycleId, date, selected, custom) {
+function saveSymptoms(cycleId, date, selected, custom, entryIndex) {
   var c = getCycleById(cycleId);
-  if (c) {
-    c.symptoms[date] = {selected: selected, custom: custom};
-    saveData();
+  if (!c) return;
+  if (!c.symptoms[date]) c.symptoms[date] = [];
+  if (typeof entryIndex === 'number' && entryIndex >= 0 && c.symptoms[date][entryIndex]) {
+    c.symptoms[date][entryIndex] = {selected: selected || [], custom: custom || ''};
+  } else {
+    if ((selected && selected.length > 0) || (custom && custom.trim() !== '')) {
+      c.symptoms[date].push({selected: selected || [], custom: custom || ''});
+    }
   }
+  saveData();
 }
 
 function deleteCycle(cycleId) {
@@ -1320,9 +1348,10 @@ function showTimePicker(opts) {
   }
 
   window._confirmTimePicker = function() {
+    var cb = _pickerCallback;
     var val = pad2(selH) + ':' + pad2(selM);
     hidePicker();
-    if (_pickerCallback) _pickerCallback(val);
+    if (cb) cb(val);
   };
 
   render();
@@ -1408,9 +1437,10 @@ function showDatePicker(opts) {
     render();
   };
   window._confirmDatePicker = function() {
+    var cb = _pickerCallback;
     var val = selYear + '-' + pad2(selMonth + 1) + '-' + pad2(selDay);
     hidePicker();
-    if (_pickerCallback) _pickerCallback(val);
+    if (cb) cb(val);
   };
 
   render();
@@ -1733,7 +1763,7 @@ function goBack() {
 function renderPage(page, params) {
   if (page === 'home') renderHome();
   else if (page === 'record') renderRecord();
-  else if (page === 'symptoms') renderSymptoms();
+  else if (page === 'symptoms') renderSymptoms(params);
   else if (page === 'cycleDaily') renderCycleDaily(params);
   else if (page === 'dayDetail') renderDayDetail(params);
   else if (page === 'calendar') renderCalendar();
@@ -1758,7 +1788,7 @@ function renderHome() {
     if (recentlyEnded) {
       // Recently ended cycle - offer to continue
       var stats = getCycleStats(lastEnded.id);
-      el.innerHTML = 
+      el.innerHTML = '' +
         '<div class="predict-card" style="margin-bottom:12px">' +
         '<div class="predict-title">🔔 上次经期刚结束</div>' +
         '<div style="text-align:center;margin:8px 0">' +
@@ -1774,7 +1804,7 @@ function renderHome() {
         '<button class="btn btn-secondary" style="max-width:260px;margin:8px auto" onclick="showStartCycleModal()">开始新周期</button>' +
         '</div>';
     } else {
-      el.innerHTML = 
+      el.innerHTML = '' +
         '<div class="empty-state">' +
         '<div class="empty-icon">🌸</div>' +
         '<div class="empty-title">开始记录你的经期</div>' +
@@ -1827,7 +1857,8 @@ function renderHome() {
     }
   }
 
-  el.innerHTML = '<div class="card"><div class="cycle-info">' +
+  el.innerHTML = '' +
+    '<div class="card"><div class="cycle-info">' +
     '<div class="cycle-day-num">第 ' + dayCount + ' 天</div>' +
     '<div class="cycle-day-count">' + formatDate(cycle.startDate) + ' 来潮 · 进行中</div>' +
     '</div>' +
@@ -2012,11 +2043,24 @@ function cancelEdit(skipNav) {
 
 
 /* ===== Symptoms Page ===== */
-function renderSymptoms() {
+function renderSymptoms(params) {
+  params = params || {};
   var el = document.getElementById('page-symptoms');
   var cycle = getCurrentCycle();
-  var date = state.symptomsDate || todayStr();
-  state.selectedSymptomsArr = [];
+  var editIndex = (typeof params.editIndex === 'number' && params.editIndex >= 0) ? params.editIndex : -1;
+  var date;
+  if (editIndex >= 0) {
+    date = params.date;
+    state.editingSymptomIndex = editIndex;
+    state.symptomsDate = date;
+  } else {
+    date = state.symptomsDate || todayStr();
+    state.editingSymptomIndex = -1;
+    state.editingSymptomCycleId = null;
+  }
+  var entries = cycle ? (cycle.symptoms[date] || []) : [];
+  var cur = (editIndex >= 0 && entries[editIndex]) ? entries[editIndex] : null;
+  state.selectedSymptomsArr = cur ? (cur.selected || []).slice() : [];
 
   if (!cycle) {
     var lastEnded3 = getLastEndedCycle();
@@ -2034,11 +2078,34 @@ function renderSymptoms() {
     return;
   }
 
-  var existing = cycle.symptoms[date];
-  if (existing && existing.selected) {
-    state.selectedSymptomsArr = existing.selected;
+  var entries = cycle.symptoms[date] || [];
+
+  // 列出当日已有的症状记录（可编辑 / 删除）
+  var listHtml = '';
+  if (entries.length > 0) {
+    listHtml += '<div class="card"><div class="card-title">📋 当日已有记录（' + entries.length + ' 条）</div>';
+    for (var ei = 0; ei < entries.length; ei++) {
+      var ent = entries[ei];
+      var lblHtml = '';
+      if (ent.selected) {
+        for (var li = 0; li < ent.selected.length; li++) {
+          var sl = getSymptomById(ent.selected[li]);
+          lblHtml += '<span class="day-stat" style="background:#E3F2FD;color:#1565C0">' + (sl ? sl.label : ent.selected[li]) + '</span>';
+        }
+      }
+      var cstHtml = (ent.custom && ent.custom.trim() !== '') ? '<div style="font-size:13px;color:#666;margin-top:4px">' + ent.custom + '</div>' : '';
+      listHtml += '<div style="display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid #f0f0f0">' +
+        '<div style="flex:1">' + lblHtml + cstHtml + (lblHtml === '' && cstHtml === '' ? '<span style="color:#bbb;font-size:13px">空记录</span>' : '') + '</div>' +
+        '<button style="border:none;background:#FCEEF1;color:#C94B63;border-radius:6px;width:32px;height:32px;font-size:15px;flex-shrink:0" onclick="editSymptomEntry(\'' + cycle.id + '\',\'' + date + '\',' + ei + ')">✎</button>' +
+        '<button style="border:none;background:#FFEBEE;color:#D32F2F;border-radius:6px;width:32px;height:32px;font-size:15px;flex-shrink:0" onclick="confirmDeleteSymptomEntry(\'' + cycle.id + '\',\'' + date + '\',' + ei + ')">✕</button>' +
+        '</div>';
+    }
+    listHtml += '</div>';
   }
 
+  // 录入表单：编辑模式预填，新增模式清空
+  var isEdit = (editIndex >= 0);
+  var formCustom = cur ? (cur.custom || '') : '';
   var checksHtml = '';
   for (var i = 0; i < SYMPTOMS.length; i++) {
     var s = SYMPTOMS[i];
@@ -2047,17 +2114,20 @@ function renderSymptoms() {
     checksHtml += '<div class="' + cls + '" data-symptom="' + s.id + '" onclick="toggleSymptom(this,\'' + s.id + '\')">' + s.label + '</div>';
   }
 
-  var customVal = existing ? (existing.custom || '') : '';
+  var formTitle = isEdit ? '✏️ 编辑症状记录' : '➕ 新增症状记录';
+  var saveLabel = isEdit ? '更新症状' : '保存症状';
+  var cancelBtn = isEdit ? '<button class="btn btn-secondary" style="flex:1" onclick="cancelEditSymptom()">取消</button>' : '';
 
-  el.innerHTML = '<div class="card"><div class="card-title">📅 日期</div>' +
-    '<input type="text" class="form-input picker-input" id="symDate" value="' + date + '" readonly onclick="showDatePicker({current:this.value,onConfirm:function(v){document.getElementById(\'symDate\').value=v}})"></div>' +
-    '<div class="card"><div class="card-title">🌡️ 今日症状</div>' +
+  el.innerHTML = listHtml +
+    '<div class="card"><div class="card-title">📅 日期</div>' +
+    '<input type="text" class="form-input picker-input" id="symDate" value="' + date + '" readonly onclick="showDatePicker({current:this.value,onConfirm:function(v){document.getElementById(\'symDate\').value=v; state.symptomsDate=v; state.editingSymptomIndex=-1; state.editingSymptomCycleId=null; renderSymptoms();}})"></div>' +
+    '<div class="card"><div class="card-title">' + formTitle + '</div>' +
     '<div class="chip-grid" id="symptomGrid">' + checksHtml + '</div></div>' +
     '<div class="card"><div class="card-title">📝 补充说明（可选）</div>' +
-    '<textarea class="form-input" id="symCustom" placeholder="记录今日身体其他感受...">' + customVal + '</textarea></div>' +
-    '<button class="btn btn-primary" onclick="saveSymptomsData()">保存症状</button>';
+    '<textarea class="form-input" id="symCustom" placeholder="记录今日身体其他感受...">' + formCustom + '</textarea></div>' +
+    '<div style="display:flex;gap:8px">' +
+    '<button class="btn btn-primary" style="flex:1" onclick="saveSymptomsData()">' + saveLabel + '</button>' + cancelBtn + '</div>';
 
-  // bind date change
   var dateEl = document.getElementById('symDate');
   if (dateEl) {
     dateEl.onchange = function() {
@@ -2089,10 +2159,54 @@ function saveSymptomsData() {
   if (!dateEl) return;
   var date = dateEl.value;
   var custom = customEl ? customEl.value.trim() : '';
-  saveSymptoms(cycle.id, date, state.selectedSymptomsArr, custom);
+  var idx = state.editingSymptomIndex;
+  if (typeof idx !== 'number' || idx < 0) idx = undefined;
+  saveSymptoms(cycle.id, date, state.selectedSymptomsArr, custom, idx);
+  state.editingSymptomIndex = -1;
   vibrate();
   showToast('✓ 症状已保存');
-  nav('home');
+  renderSymptoms();
+}
+
+function cancelEditSymptom() {
+  state.editingSymptomIndex = -1;
+  renderSymptoms();
+}
+
+function editSymptomEntry(cycleId, date, index) {
+  state.symptomsDate = date;
+  nav('symptoms', {date: date, editIndex: index});
+}
+
+function addSymptomEntry(cycleId, date) {
+  state.symptomsDate = date;
+  nav('symptoms', {date: date});
+}
+
+function deleteSymptomEntry(cycleId, date, index) {
+  var c = getCycleById(cycleId);
+  if (!c || !c.symptoms[date]) return;
+  var arr = [];
+  for (var i = 0; i < c.symptoms[date].length; i++) {
+    if (i !== index) arr.push(c.symptoms[date][i]);
+  }
+  c.symptoms[date] = arr;
+  saveData();
+}
+
+function confirmDeleteSymptomEntry(cycleId, date, index) {
+  showModal({
+    title: '删除症状记录',
+    body: '确定删除这条症状记录吗？',
+    confirmText: '删除',
+    danger: true,
+    onConfirm: function() {
+      deleteSymptomEntry(cycleId, date, index);
+      vibrate();
+      showToast('已删除');
+      nav('dayDetail', {cycleId: cycleId, date: date});
+    }
+  });
 }
 
 /* ===== Cycle Daily Page ===== */
@@ -2146,8 +2260,13 @@ function renderCycleDaily(params) {
       if (dStats.pants > 0) statChips += '<span class="day-stat" style="background:#E8F5E9;color:#2E7D32">安睡裤 ' + dStats.pants + '</span>';
     }
     var symChip = '';
-    if (sym && sym.selected && sym.selected.length > 0) {
-      symChip = '<span class="day-stat" style="background:#E3F2FD;color:#1565C0">症状 ' + sym.selected.length + '</span>';
+    if (sym && sym.length > 0) {
+      var symCnt = 0;
+      for (var ki = 0; ki < sym.length; ki++) {
+        var ek = sym[ki];
+        if ((ek.selected && ek.selected.length > 0) || (ek.custom && ek.custom.trim() !== '')) symCnt++;
+      }
+      if (symCnt > 0) symChip = '<span class="day-stat" style="background:#E3F2FD;color:#1565C0">症状 ' + symCnt + '</span>';
     }
     var todayStyle = isToday(d) ? ' style="border:2px solid #E8657A"' : '';
     var dayLabel = formatDate(d) + (isToday(d) ? '（今天）' : '') + ' ' + getWeekday(d);
@@ -2206,19 +2325,31 @@ function renderDayDetail(params) {
   }
 
   var symHtml = '';
-  if (sym) {
-    var symLabelsHtml = '';
-    if (sym.selected && sym.selected.length > 0) {
-      for (var si = 0; si < sym.selected.length; si++) {
-        var ss = getSymptomById(sym.selected[si]);
-        var sname = ss ? ss.label : sym.selected[si];
-        symLabelsHtml += '<span class="day-stat" style="background:#E3F2FD;color:#1565C0">' + sname + '</span>';
+  if (sym && sym.length > 0) {
+    var entriesHtml = '';
+    for (var ei2 = 0; ei2 < sym.length; ei2++) {
+      var ent2 = sym[ei2];
+      var labels2 = '';
+      if (ent2.selected) {
+        for (var sii = 0; sii < ent2.selected.length; sii++) {
+          var ss2 = getSymptomById(ent2.selected[sii]);
+          labels2 += '<span class="day-stat" style="background:#E3F2FD;color:#1565C0">' + (ss2 ? ss2.label : ent2.selected[sii]) + '</span>';
+        }
       }
+      var cust2 = (ent2.custom && ent2.custom.trim() !== '') ? '<div style="font-size:14px;color:#666;line-height:1.6;background:#F8F9FA;padding:10px;border-radius:8px;margin-top:6px">' + ent2.custom + '</div>' : '';
+      entriesHtml += '<div style="display:flex;align-items:flex-start;gap:8px;padding:10px 0;border-bottom:1px solid #f0f0f0">' +
+        '<div style="flex:1">' + labels2 + cust2 + (labels2 === '' && cust2 === '' ? '<span style="color:#bbb;font-size:13px">空记录</span>' : '') + '</div>' +
+        '<button style="border:none;background:#FCEEF1;color:#C94B63;border-radius:6px;width:32px;height:32px;font-size:15px;flex-shrink:0" onclick="editSymptomEntry(\'' + cycle.id + '\',\'' + date + '\',' + ei2 + ')">✎</button>' +
+        '<button style="border:none;background:#FFEBEE;color:#D32F2F;border-radius:6px;width:32px;height:32px;font-size:15px;flex-shrink:0" onclick="confirmDeleteSymptomEntry(\'' + cycle.id + '\',\'' + date + '\',' + ei2 + ')">✕</button>' +
+        '</div>';
     }
-    var customHtml = sym.custom ? '<div style="font-size:14px;color:#666;line-height:1.6;background:#F8F9FA;padding:10px;border-radius:8px">' + sym.custom + '</div>' : '';
-    symHtml = '<div class="card"><div class="card-title">🌡️ 当日症状</div>' +
-      '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:' + (sym.custom ? '8px' : '0') + '">' + symLabelsHtml + '</div>' +
-      customHtml + '</div>';
+    symHtml = '<div class="card"><div class="card-title" style="display:flex;justify-content:space-between;align-items:center">🌡️ 当日症状' +
+      '<button style="border:none;background:#E8657A;color:#fff;border-radius:6px;font-size:13px;padding:6px 10px" onclick="addSymptomEntry(\'' + cycle.id + '\',\'' + date + '\')">＋ 添加</button></div>' +
+      entriesHtml + '</div>';
+  } else {
+    symHtml = '<div class="card"><div class="card-title" style="display:flex;justify-content:space-between;align-items:center">🌡️ 当日症状' +
+      '<button style="border:none;background:#E8657A;color:#fff;border-radius:6px;font-size:13px;padding:6px 10px" onclick="addSymptomEntry(\'' + cycle.id + '\',\'' + date + '\')">＋ 添加</button></div>' +
+      '<div style="text-align:center;color:#999;padding:14px;font-size:14px">当天没有症状记录</div></div>';
   }
 
   el.innerHTML = '<div class="card"><div class="cycle-info">' +
@@ -2441,6 +2572,7 @@ function importBackup() {
       confirmText: '确认恢复',
       onConfirm: function() {
         state.data = data;
+        normalizeData();
         saveData();
         vibrate();
         showToast('✓ 数据已恢复');
@@ -2453,130 +2585,26 @@ function importBackup() {
 }
 
 function exportToJSONFile() {
-  var json = JSON.stringify(state.data, null, 2);
-  var date = new Date();
-  var y = date.getFullYear();
-  var m = String(date.getMonth() + 1);
-  if (m.length < 2) m = '0' + m;
-  var d = String(date.getDate());
-  if (d.length < 2) d = '0' + d;
-  var h = String(date.getHours());
-  if (h.length < 2) h = '0' + h;
-  var min = String(date.getMinutes());
-  if (min.length < 2) min = '0' + min;
-  var filename = '经期记录_' + y + '-' + m + '-' + d + '_' + h + '-' + min + '.json';
-
-  var isNative = (typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform && Capacitor.isNativePlatform());
-
-  if (isNative && Capacitor.Plugins.JsonExport) {
-    // Native: show options dialog
-    showExportDialog(filename, json);
-  } else {
-    // Web: direct download
-    webDownloadJson(filename, json);
-  }
-
-  // ===== Export options bottom sheet =====
-  function showExportDialog(fname, fcontent) {
-    // Remove any existing dialog
-    var existing = document.getElementById('export-dialog-overlay');
-    if (existing) existing.remove();
-
-    var overlay = document.createElement('div');
-    overlay.id = 'export-dialog-overlay';
-    overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.45);z-index:99999;display:flex;align-items:flex-end;justify-content:center;transition:opacity 0.2s;';
-
-    var sheet = document.createElement('div');
-    sheet.style.cssText = 'background:#fff;width:100%;max-width:500px;border-radius:16px 16px 0 0;padding:24px 20px calc(24px + env(safe-area-inset-bottom));box-shadow:0 -4px 20px rgba(0,0,0,0.1);';
-
-    // Title
-    var title = document.createElement('div');
-    title.style.cssText = 'font-size:18px;font-weight:600;color:#333;text-align:center;margin-bottom:6px;';
-    title.textContent = '导出JSON文件';
-    sheet.appendChild(title);
-
-    var subtitle = document.createElement('div');
-    subtitle.style.cssText = 'font-size:13px;color:#999;text-align:center;margin-bottom:20px;word-break:break-all;';
-    subtitle.textContent = fname;
-    sheet.appendChild(subtitle);
-
-    // Option 1: Share
-    var btnShare = document.createElement('button');
-    btnShare.style.cssText = 'width:100%;padding:15px;margin-bottom:12px;border:none;border-radius:12px;background:linear-gradient(135deg,#E8657A,#F0909E);color:#fff;font-size:16px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;';
-    btnShare.innerHTML = '<span>分享给好友</span>';
-    btnShare.onclick = function() {
-      overlay.remove();
-      Capacitor.Plugins.JsonExport.share({
-        filename: fname,
-        content: fcontent
-      }).then(function() {
-        showToast('已打开分享面板');
-      }).catch(function() {
-        webDownloadJson(fname, fcontent);
-      });
-    };
-    sheet.appendChild(btnShare);
-
-    // Option 2: Save to phone (choose location)
-    var btnSave = document.createElement('button');
-    btnSave.style.cssText = 'width:100%;padding:15px;margin-bottom:12px;border:2px solid #E8657A;border-radius:12px;background:#fff;color:#E8657A;font-size:16px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;';
-    btnSave.innerHTML = '<span>保存到手机（可选择位置）</span>';
-    btnSave.onclick = function() {
-      overlay.remove();
-      showToast('正在打开文件管理器...');
-      Capacitor.Plugins.JsonExport.saveAs({
-        filename: fname,
-        content: fcontent
-      }).then(function(result) {
-        var path = (result && result.path) ? result.path : '';
-        // Make path more readable
-        if (path && path.indexOf('%2F') !== -1) {
-          path = decodeURIComponent(path.replace(/\+/g, ' '));
-        }
-        showToast('已保存到：' + path);
-      }).catch(function(err) {
-        var msg = (err && err.message) ? err.message : '';
-        if (msg.indexOf('canceled') !== -1) {
-          // User canceled — no action
-          return;
-        }
-        showToast('保存失败: ' + msg);
-        webDownloadJson(fname, fcontent);
-      });
-    };
-    sheet.appendChild(btnSave);
-
-    // Cancel button
-    var btnCancel = document.createElement('button');
-    btnCancel.style.cssText = 'width:100%;padding:15px;border:none;border-radius:12px;background:#f5f5f5;color:#666;font-size:16px;cursor:pointer;';
-    btnCancel.textContent = '取消';
-    btnCancel.onclick = function() { overlay.remove(); };
-    sheet.appendChild(btnCancel);
-
-    overlay.appendChild(sheet);
-    // Click outside to dismiss
-    overlay.addEventListener('click', function(e) {
-      if (e.target === overlay) overlay.remove();
-    });
-    document.body.appendChild(overlay);
-  }
-
-  // ===== Web download (browser fallback) =====
-  function webDownloadJson(fname, fcontent) {
-    try {
-      var blob = new Blob([fcontent], {type: 'application/json;charset=utf-8'});
-      var url = URL.createObjectURL(blob);
-      var a = document.createElement('a');
-      a.href = url;
-      a.download = fname;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
-      showToast('已导出: ' + fname);
-    } catch (e) {
-      showToast('导出失败: ' + e.message);
-    }
+  try {
+    var json = JSON.stringify(state.data, null, 2);
+    var blob = new Blob([json], {type: 'application/json;charset=utf-8'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    var date = new Date();
+    var y = date.getFullYear();
+    var m = String(date.getMonth() + 1);
+    if (m.length < 2) m = '0' + m;
+    var d = String(date.getDate());
+    if (d.length < 2) d = '0' + d;
+    a.href = url;
+    a.download = '经期记录备份_' + y + m + d + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+    showToast('✓ 已导出，请在文件管理器/下载目录查找');
+  } catch (e) {
+    showToast('导出失败: ' + e.message);
   }
 }
 
