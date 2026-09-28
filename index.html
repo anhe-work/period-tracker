@@ -237,6 +237,71 @@ body.no-nav .bottom-nav{display:none}
   color:var(--primary-dark);font-weight:600;
 }
 .chip:active{transform:scale(0.95)}
+/* 自定义用品：chip 上可挂删除角标 */
+#productGrid .chip{position:relative}
+.chip-x{
+  position:absolute;top:-6px;right:-5px;
+  width:19px;height:19px;border-radius:50%;
+  background:#FFEBEE;color:#D32F2F;border:1px solid #fff;
+  font-size:11px;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 1px 4px rgba(0,0,0,.15);
+}
+.chip-add{border-style:dashed;border-color:#E8AEB8;color:var(--primary);font-size:14px}
+/* 添加自定义用品：归类选择 */
+.prod-type-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.prod-type{
+  text-align:center;padding:10px 4px;border-radius:var(--radius-sm);
+  border:2px solid var(--border);background:#fff;font-size:14px;
+  cursor:pointer;touch-action:manipulation;-webkit-user-select:none;user-select:none;
+}
+.prod-type.selected{border-color:var(--primary);background:var(--primary-light);color:var(--primary-dark);font-weight:600}
+
+/* ===== Symptom Picker (图标网格 · 分组) ===== */
+.sym-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px 4px}
+.sym-cell{
+  position:relative;display:flex;flex-direction:column;align-items:center;gap:5px;
+  cursor:pointer;touch-action:manipulation;-webkit-user-select:none;user-select:none;
+}
+.sym-cell:active{transform:scale(0.94)}
+.sym-ico{
+  width:46px;height:46px;border-radius:50%;
+  background:#FDECEF;border:2px solid transparent;
+  display:flex;align-items:center;justify-content:center;
+  font-size:21px;line-height:1;
+  transition:background .15s,border-color .15s,box-shadow .15s;
+}
+.sym-lbl{
+  font-size:11.5px;line-height:1.25;color:var(--text-secondary);
+  text-align:center;word-break:keep-all;
+}
+.sym-cell.selected .sym-ico{
+  background:var(--primary);border-color:#fff;
+  box-shadow:0 2px 8px rgba(232,101,122,.4);
+}
+.sym-cell.selected .sym-lbl{color:var(--primary-dark);font-weight:600}
+.sym-add .sym-ico{
+  background:#fff;border:1.5px dashed #E8AEB8;color:var(--primary);
+  font-size:24px;font-weight:400;
+}
+.sym-add .sym-lbl{color:var(--primary)}
+/* 自定义症状的图标（✚ 是文字符号，默认黑色）统一改成主题粉色；选中时随粉色圆底变白 */
+.sym-cell .sym-ico.sym-ico-custom{color:var(--primary);font-size:22px;font-weight:700}
+.sym-cell.selected .sym-ico.sym-ico-custom{color:#fff}
+.sym-del{
+  position:absolute;top:-3px;right:14%;
+  width:19px;height:19px;border-radius:50%;
+  background:#E8657A;color:#fff;font-size:11px;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 1px 4px rgba(0,0,0,.18);
+}
+.sym-group-head{display:flex;justify-content:space-between;align-items:center}
+.sym-edit-btn{
+  font-size:12px;color:var(--primary);font-weight:500;
+  padding:3px 10px;border-radius:999px;border:1px solid var(--primary);
+  background:#fff;cursor:pointer;
+}
+.sym-empty-tip{font-size:12px;color:var(--text-tertiary);text-align:center;padding:2px 0 8px}
 
 /* ===== Bleeding Level Buttons ===== */
 .bleeding-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -610,6 +675,20 @@ input[type="date"].picker-input,input[type="time"].picker-input{
 .flex-between{display:flex;justify-content:space-between;align-items:center}
 .cycle-info{text-align:center;margin-bottom:14px}
 .cycle-day-count{font-size:14px;color:var(--text-secondary)}
+/* 上一个 / 下一个周期 切换按钮 */
+.cycle-switch-btn{
+  width:34px;height:34px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:50%;
+  background:#FCEEF1;color:#E8657A;
+  font-size:20px;line-height:1;font-weight:700;
+  border:1px solid #F6D6DE;
+  cursor:pointer;user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  transition:background .15s;
+}
+.cycle-switch-btn:active{background:#F8DDE5}
+.cycle-switch-btn.disabled{opacity:.28;pointer-events:none}
 .cycle-day-num{font-size:28px;font-weight:700;color:var(--primary)}
 .recent-item{
   display:flex;align-items:center;gap:10px;
@@ -705,6 +784,35 @@ input[type="date"].picker-input,input[type="time"].picker-input{
   display:inline-block;width:14px;height:14px;
   border-radius:50%;border:2px solid var(--primary);
 }
+
+/* ===== Phase backgrounds (menstrual & predicted handled separately) ===== */
+.calendar-cell.menstrual-day{background:#FCEEF1;color:#C94B63}
+.calendar-cell.follicular-day{background:#EAF1FB;color:#3A6BB0}
+.calendar-cell.ovulation-day{background:#E7F5EE;color:#1F7A4D}
+.calendar-cell.luteal-day{background:#FBF1E0;color:#B9792B}
+.calendar-cell.menstrual-day.today .calendar-day-num,
+.calendar-cell.follicular-day.today .calendar-day-num,
+.calendar-cell.ovulation-day.today .calendar-day-num,
+.calendar-cell.luteal-day.today .calendar-day-num{border-color:currentColor}
+.calendar-phase-tag{font-size:10px;line-height:1;margin-top:1px;font-weight:700}
+.calendar-legend-dot.spotting{background:#F2F3F5;border:1px solid #B8BCC4}
+.calendar-cell.spotting-day{background:#F2F3F5;color:#8A8F99}
+.calendar-spot-tag{font-size:10px;line-height:1;margin-top:1px;font-weight:700;color:#8A8F99}
+/* 仅有症状/白带记录的日期：右上角小蓝点 */
+.calendar-log-dot{
+  position:absolute;top:4px;right:4px;
+  width:5px;height:5px;border-radius:50%;
+  background:#5B8FD9;
+}
+.calendar-legend-dot.log{background:#5B8FD9;border:1px solid #3A6BB0}
+.phase-banner{
+  background:linear-gradient(135deg,#FFF7E8 0%,#FFF0F5 100%);
+  border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:12px;
+  text-align:center;font-size:14px;color:var(--text-secondary);box-shadow:var(--shadow);
+}
+.phase-banner strong{color:var(--primary-dark);font-weight:700}
+
+/* ===== 出血记录：自动合并短间隔（排卵期出血/点滴）由算法处理，不区分类型 ===== */
 
 /* ===== Prediction Card ===== */
 .predict-card{
@@ -822,16 +930,41 @@ var BLEEDING = [
   {id:'heavy',label:'量大',color:'#E53935'},
   {id:'very_heavy',label:'暴多',color:'#B71C1C'}
 ];
+// 症状大类（症状打卡页按此分组展示）
+var SYMPTOM_GROUPS = [
+  {key:'body',      label:'身体症状',   icon:'🩷'},
+  {key:'discharge', label:'阴道分泌物', icon:'💧'},
+  {key:'more',      label:'更多症状',   icon:'➕'}
+];
+// 内置症状：id 保持与旧数据一致（改名只动 label，不影响已存记录）
 var SYMPTOMS = [
-  {id:'cramp',label:'痛经腹痛'},
-  {id:'backache',label:'腰酸背痛'},
-  {id:'headache',label:'头痛头晕'},
-  {id:'breast',label:'乳房胀痛'},
-  {id:'fatigue',label:'疲劳乏力'},
-  {id:'mood',label:'情绪波动'},
-  {id:'bloating',label:'腹胀浮肿'},
-  {id:'bowel',label:'腹泻便秘'},
-  {id:'heaviness',label:'肛门坠胀'}
+  // —— 身体症状 ——
+  {id:'backache',       label:'腰酸',        icon:'🦴', group:'body'},
+  {id:'cramp',          label:'腹痛',        icon:'😖', group:'body'},
+  {id:'heaviness',      label:'小腹坠胀',    icon:'⬇️', group:'body'},
+  {id:'breast',         label:'乳房胀痛',    icon:'💗', group:'body'},
+  {id:'nipple',         label:'乳头触痛',    icon:'👆', group:'body'},
+  {id:'headache',       label:'头痛',        icon:'🤕', group:'body'},
+  {id:'sleepiness',     label:'嗜睡',        icon:'😴', group:'body'},
+  {id:'insomnia',       label:'失眠',        icon:'🌙', group:'body'},
+  {id:'mood',           label:'情绪波动',    icon:'🎭', group:'body'},
+  {id:'bloating',       label:'腹胀浮肿',    icon:'🎈', group:'body'},
+  {id:'diarrhea',       label:'腹泻',        icon:'💩', group:'body'},
+  {id:'constipation',   label:'便秘',        icon:'⏳', group:'body'},
+  // —— 阴道分泌物 ——
+  {id:'discharge_more', label:'白带增多',    icon:'💧', group:'discharge'},
+  {id:'discharge_egg',  label:'拉丝白带',    icon:'🥚', group:'discharge'},
+  {id:'discharge_thick',label:'豆腐渣白带',  icon:'🧀', group:'discharge'},
+  {id:'discharge_brown',label:'褐色分泌物',  icon:'🟤', group:'discharge'},
+  {id:'discharge_color',label:'分泌物异常',  icon:'⚠️', group:'discharge'},
+  // —— 更多症状（固定三项内置，其余由用户点「添加症状」自建，存于 state.data.customSymptoms）——
+  {id:'anal_pressure',  label:'肛门坠胀',    icon:'🔻', group:'more'},
+  {id:'libido_up',      label:'性欲上升',    icon:'🔥', group:'more'},
+  {id:'libido_down',    label:'性欲下降',    icon:'🧊', group:'more'},
+  // —— 已退役：不出现在选择器里，仅供旧记录显示原标签 ——
+  {id:'acne',           label:'长痘',        icon:'🔴', group:'more', retired: true},
+  {id:'bowel',          label:'腹泻便秘',    icon:'🚽', group:'body', retired: true},
+  {id:'fatigue',        label:'疲劳乏力',    icon:'😪', group:'body', retired: true}
 ];
 var STORAGE_KEY = 'period_tracker_v1';
 var PAGE_TITLES = {
@@ -852,7 +985,7 @@ window.addEventListener('error', function(e) {
 });
 
 /* ===== State ===== */
-var APP_VERSION = '1.2.8';
+var APP_VERSION = '1.6.6';
 
 /* JS-level cache busting: if version changed, force reload */
 (function() {
@@ -860,7 +993,10 @@ var APP_VERSION = '1.2.8';
     var stored = localStorage.getItem('__app_version__');
     if (stored && stored !== APP_VERSION) {
       localStorage.setItem('__app_version__', APP_VERSION);
-      location.reload(true);
+      // 版本升级：先清掉 PWA / WebView 缓存与旧 Service Worker，再重载
+      //（否则 Service Worker 的 cache-first 会继续返回旧界面）
+      try { clearPwaCache(); } catch(e2) {}
+      setTimeout(function() { location.reload(true); }, 300);
       return;
     }
     if (!stored) {
@@ -868,6 +1004,24 @@ var APP_VERSION = '1.2.8';
     }
   } catch(e) {}
 })();
+
+/* 清空 PWA 缓存并注销 Service Worker（升级后确保加载的是新页面） */
+function clearPwaCache() {
+  try {
+    if (window.caches && caches.keys) {
+      caches.keys().then(function(names) {
+        for (var i = 0; i < names.length; i++) caches.delete(names[i]);
+      });
+    }
+  } catch(e) {}
+  try {
+    if (navigator.serviceWorker && navigator.serviceWorker.getRegistrations) {
+      navigator.serviceWorker.getRegistrations().then(function(regs) {
+        for (var i = 0; i < regs.length; i++) regs[i].unregister();
+      });
+    }
+  } catch(e) {}
+}
 
 var state = {
   currentPage: 'home',
@@ -879,8 +1033,12 @@ var state = {
   selectedBleeding: null,
   selectedSymptomsArr: [],
   navHistory: [],
+  symptomsAsSub: false,
   editingCycleId: null,
   editingChangeId: null,
+  editingSymptoms: false,
+  editingProducts: false,
+  justAddedProduct: null,
   calendarYear: 0,
   calendarMonth: 0
 };
@@ -907,10 +1065,12 @@ function loadData() {
         state.data = {cycles: []};
       }
       normalizeData();
+      migrateSymptomsToDailyLogs();
     }
   } catch (e) {
     state.data = {cycles: []};
   }
+  ensureDailyLogs();
 }
 function saveData() {
   if (!LOCALSTORAGE_AVAILABLE) {
@@ -945,6 +1105,77 @@ function normalizeData() {
       }
     }
   }
+}
+
+/* ===== 每日记录层（症状/白带等）：按日期独立存储，不依赖出血周期 ===== */
+function ensureDailyLogs() {
+  if (!state.data.dailyLogs) state.data.dailyLogs = {};
+  return state.data.dailyLogs;
+}
+
+// 一次性迁移：把旧版挂在出血周期上的症状搬到按日期的 dailyLogs，保证老数据不丢
+function migrateSymptomsToDailyLogs() {
+  if (!state.data || !state.data.cycles) return;
+  ensureDailyLogs();
+  var changed = false;
+  for (var i = 0; i < state.data.cycles.length; i++) {
+    var c = state.data.cycles[i];
+    if (!c.symptoms) continue;
+    for (var date in c.symptoms) {
+      var arr = c.symptoms[date];
+      if (!Array.isArray(arr) || arr.length === 0) continue;
+      if (!state.data.dailyLogs[date]) state.data.dailyLogs[date] = {symptoms: []};
+      if (!state.data.dailyLogs[date].symptoms) state.data.dailyLogs[date].symptoms = [];
+      for (var j = 0; j < arr.length; j++) {
+        state.data.dailyLogs[date].symptoms.push(arr[j]);
+      }
+      changed = true;
+    }
+    c.symptoms = {}; // 清空旧位置，避免重复展示
+  }
+  if (changed) saveData();
+}
+
+function getDaySymptoms(date) {
+  if (!state.data.dailyLogs || !state.data.dailyLogs[date]) return [];
+  return state.data.dailyLogs[date].symptoms || [];
+}
+
+// 当天是否有「非空」记录（只有勾选或备注才算）
+function hasDaySymptoms(date) {
+  var arr = getDaySymptoms(date);
+  for (var i = 0; i < arr.length; i++) {
+    var e = arr[i];
+    if ((e.selected && e.selected.length > 0) || (e.custom && e.custom.trim() !== '')) return true;
+  }
+  return false;
+}
+
+function saveDaySymptom(date, selected, custom, entryIndex) {
+  ensureDailyLogs();
+  if (!state.data.dailyLogs[date]) state.data.dailyLogs[date] = {symptoms: []};
+  if (!state.data.dailyLogs[date].symptoms) state.data.dailyLogs[date].symptoms = [];
+  var list = state.data.dailyLogs[date].symptoms;
+  if (typeof entryIndex === 'number' && entryIndex >= 0 && list[entryIndex]) {
+    list[entryIndex] = {selected: selected || [], custom: custom || ''};
+  } else {
+    if ((selected && selected.length > 0) || (custom && custom.trim() !== '')) {
+      list.push({selected: selected || [], custom: custom || ''});
+    }
+  }
+  saveData();
+}
+
+function deleteDaySymptom(date, index) {
+  ensureDailyLogs();
+  if (!state.data.dailyLogs[date] || !state.data.dailyLogs[date].symptoms) return;
+  var arr = [];
+  var list = state.data.dailyLogs[date].symptoms;
+  for (var i = 0; i < list.length; i++) {
+    if (i !== index) arr.push(list[i]);
+  }
+  state.data.dailyLogs[date].symptoms = arr;
+  saveData();
 }
 
 function genId() {
@@ -987,16 +1218,31 @@ function reopenCycle(cycleId) {
 }
 
 function getLastEndedCycle() {
-  // Find the most recently ended cycle
+  // 最近一次已结束的出血记录
   var last = null;
   for (var i = state.data.cycles.length - 1; i >= 0; i--) {
-    if (state.data.cycles[i].endDate) {
-      if (!last || state.data.cycles[i].endDate > last.endDate) {
-        last = state.data.cycles[i];
+    var c = state.data.cycles[i];
+    if (c.endDate) {
+      if (!last || c.endDate > last.endDate) {
+        last = c;
       }
     }
   }
   return last;
+}
+
+// 最近一次已结束的【月经】（排除被自动判定为异常出血的记录）
+// 用于首页「上次经期刚结束」卡片 —— 否则该卡片可能指向一次异常出血
+function getLastEndedPeriodCycle() {
+  var cls = classifyCycles();
+  var last = null;
+  for (var i = 0; i < state.data.cycles.length; i++) {
+    var c = state.data.cycles[i];
+    if (!c.endDate) continue;
+    if (cls[c.id] && cls[c.id] !== 'period') continue;
+    if (!last || c.endDate > last.endDate) last = c;
+  }
+  return last || getLastEndedCycle();
 }
 
 function addChange(cycleId, data) {
@@ -1044,18 +1290,9 @@ function updateChange(cycleId, changeId, data) {
   }
 }
 
+// 兼容旧签名：症状已改为按日期独立存储，不再挂在出血周期上
 function saveSymptoms(cycleId, date, selected, custom, entryIndex) {
-  var c = getCycleById(cycleId);
-  if (!c) return;
-  if (!c.symptoms[date]) c.symptoms[date] = [];
-  if (typeof entryIndex === 'number' && entryIndex >= 0 && c.symptoms[date][entryIndex]) {
-    c.symptoms[date][entryIndex] = {selected: selected || [], custom: custom || ''};
-  } else {
-    if ((selected && selected.length > 0) || (custom && custom.trim() !== '')) {
-      c.symptoms[date].push({selected: selected || [], custom: custom || ''});
-    }
-  }
-  saveData();
+  saveDaySymptom(date, selected, custom, entryIndex);
 }
 
 function deleteCycle(cycleId) {
@@ -1112,11 +1349,71 @@ function dayBefore(s) {
 
 function isToday(s) { return s === todayStr(); }
 
+/* 选择器里可选的用品 = 内置 + 用户自建（退役项不出现在选择器） */
+function getAllProducts() {
+  var list = PRODUCTS.slice();
+  var cp = state.data.customProducts || [];
+  for (var i = 0; i < cp.length; i++) {
+    if (cp[i].retired) continue;
+    list.push(cp[i]);
+  }
+  return list;
+}
+
+/* 按 id 取用品：包含退役项，保证历史记录仍能显示原名称 */
 function getProductById(id) {
   for (var i = 0; i < PRODUCTS.length; i++) {
     if (PRODUCTS[i].id === id) return PRODUCTS[i];
   }
+  var cp = state.data.customProducts || [];
+  for (var j = 0; j < cp.length; j++) {
+    if (cp[j].id === id) return cp[j];
+  }
   return null;
+}
+
+/* ===== 自定义用品（用户自建，用于「选择用品」）===== */
+var PRODUCT_TYPES = [
+  {key:'napkin', label:'卫生巾'},
+  {key:'pad',    label:'护垫'},
+  {key:'tampon', label:'棉条'},
+  {key:'pants',  label:'安睡裤'}
+];
+
+function addCustomProduct(label, type) {
+  label = (label || '').trim();
+  if (!label) return null;
+  if (!state.data.customProducts) state.data.customProducts = [];
+  // 重名不重复添加
+  var exist = getAllProducts();
+  for (var i = 0; i < exist.length; i++) {
+    if (exist[i].label === label) return exist[i];
+  }
+  var p = {id: 'cp_' + genId(), label: label, short: label, type: type || 'napkin', custom: true};
+  state.data.customProducts.push(p);
+  saveData();
+  return p;
+}
+
+/* 删除自定义用品：已被历史记录引用时改为「退役」（列表里消失，历史仍显示原名称） */
+function deleteCustomProduct(id) {
+  var used = false;
+  for (var ci = 0; ci < state.data.cycles.length; ci++) {
+    var chs = state.data.cycles[ci].changes || [];
+    for (var k = 0; k < chs.length; k++) {
+      if (chs[k].productId === id) { used = true; break; }
+    }
+    if (used) break;
+  }
+  var cp = state.data.customProducts || [];
+  var arr = [];
+  for (var i = 0; i < cp.length; i++) {
+    if (cp[i].id !== id) { arr.push(cp[i]); continue; }
+    if (used) { cp[i].retired = true; arr.push(cp[i]); }
+  }
+  state.data.customProducts = arr;
+  if (state.selectedProduct === id) state.selectedProduct = PRODUCTS[0].id;
+  saveData();
 }
 
 function getBleedingById(id) {
@@ -1126,9 +1423,49 @@ function getBleedingById(id) {
   return null;
 }
 
+/* ===== 自定义症状（用户自建，归入「更多症状」）===== */
+function getAllSymptoms() {
+  var list = SYMPTOMS.slice();
+  var cs = state.data.customSymptoms || [];
+  for (var i = 0; i < cs.length; i++) list.push(cs[i]);
+  return list;
+}
+
+function addCustomSymptom(label) {
+  label = (label || '').trim();
+  if (!label) return null;
+  if (!state.data.customSymptoms) state.data.customSymptoms = [];
+  // 重名不重复添加
+  var exist = getAllSymptoms();
+  for (var i = 0; i < exist.length; i++) {
+    if (exist[i].label === label) return exist[i];
+  }
+  var s = {id: 'cs_' + genId(), label: label, icon: '✚', group: 'more', custom: true};
+  state.data.customSymptoms.push(s);
+  saveData();
+  return s;
+}
+
+function deleteCustomSymptom(id) {
+  var cs = state.data.customSymptoms || [];
+  var arr = [];
+  for (var i = 0; i < cs.length; i++) {
+    if (cs[i].id !== id) arr.push(cs[i]);
+  }
+  state.data.customSymptoms = arr;
+  // 同步从「今日已选」里移除，避免留下空引用
+  var sel = [];
+  for (var j = 0; j < state.selectedSymptomsArr.length; j++) {
+    if (state.selectedSymptomsArr[j] !== id) sel.push(state.selectedSymptomsArr[j]);
+  }
+  state.selectedSymptomsArr = sel;
+  saveData();
+}
+
 function getSymptomById(id) {
-  for (var i = 0; i < SYMPTOMS.length; i++) {
-    if (SYMPTOMS[i].id === id) return SYMPTOMS[i];
+  var all = getAllSymptoms();
+  for (var i = 0; i < all.length; i++) {
+    if (all[i].id === id) return all[i];
   }
   return null;
 }
@@ -1514,43 +1851,117 @@ function addDays(dateStr, n) {
 function getCompletedCycles() {
   var result = [];
   for (var i = 0; i < state.data.cycles.length; i++) {
-    if (state.data.cycles[i].endDate) result.push(state.data.cycles[i]);
+    var c = state.data.cycles[i];
+    if (c.endDate) result.push(c);
   }
   return result;
 }
 
+// 自动识别「真实经期」用于预测：
+//  - 一次出血持续 ≥ MIN_PERIOD_DAYS 天视为月经；更短的（点滴 / 排卵期出血）不计入周期计算。
+//  - 两条经期开始日间隔 < MERGE_GAP 天则合并为同一次（如用户分段记录、排卵期出血夹在中间）。
+// 这样用户只需记录「出血开始 / 结束」，无需自己判断类型，预测也不会被短间隔出血带偏。
+// 运行时自动判定：某条出血是「月经(period)」还是「异常出血(spotting)」。
+// 不存 type 字段——用户只记开始/结束，判断交给 app，用户无需区分。
+// 依据：既往月经的周期规律。月经后不久（远不到预期下次窗口）就来的出血 → 异常出血，不污染预测。
+function classifyCycles() {
+  var MIN_PERIOD_DAYS = 3;
+  var all = state.data.cycles.slice().sort(function(a, b) {
+    return a.startDate < b.startDate ? -1 : (a.startDate > b.startDate ? 1 : 0);
+  });
+  var result = {};
+  // 候选：进行中 或 时长达到月经下限的出血
+  var candidates = all.filter(function(c) {
+    var dur = c.endDate ? (daysBetween(c.startDate, c.endDate) + 1) : 0;
+    return !c.endDate || dur >= MIN_PERIOD_DAYS;
+  });
+  // 数据太少：全部当月经，保证预测始终可用
+  if (candidates.length < 2) {
+    all.forEach(function(c) { result[c.id] = 'period'; });
+    return result;
+  }
+  // 初始平均周期：用「较大的半数间隔」估计，排除异常出血的短间隔干扰
+  // （异常出血通常紧挨着上次月经、间隔远小于真月经间隔，会被排除在半数之外）
+  var cl = [];
+  for (var i = 1; i < candidates.length; i++) {
+    cl.push(daysBetween(candidates[i - 1].startDate, candidates[i].startDate));
+  }
+  cl.sort(function(a, b) { return a - b; });
+  var k = Math.max(1, Math.ceil(cl.length / 2));
+  var avgSum = 0;
+  for (var ci = cl.length - k; ci < cl.length; ci++) avgSum += cl[ci];
+  var avgCycle = Math.round(avgSum / k) || 28;
+  var TOL = Math.max(7, Math.round(avgCycle * 0.4)); // 预期月经窗口的容差
+  var lastPeriodStart = null;
+  for (var j = 0; j < candidates.length; j++) {
+    var c = candidates[j];
+    if (lastPeriodStart === null) {
+      result[c.id] = 'period';
+      lastPeriodStart = c.startDate;
+    } else {
+      var gap = daysBetween(lastPeriodStart, c.startDate);
+      if (gap >= avgCycle - TOL) {
+        // 落在预期月经窗口附近（或之后）：视为月经，并刷新锚点
+        result[c.id] = 'period';
+        lastPeriodStart = c.startDate;
+      } else {
+        // 距上次月经太近（远没到预期经期）：异常出血（排卵期/不规则出血）
+        result[c.id] = 'spotting';
+      }
+    }
+  }
+  // 过短的出血（点滴）直接判为异常出血
+  all.forEach(function(c) { if (!(c.id in result)) result[c.id] = 'spotting'; });
+  return result;
+}
+
+function getRealPeriods() {
+  var classification = classifyCycles();
+  var periods = state.data.cycles.filter(function(c) { return classification[c.id] === 'period'; });
+  periods.sort(function(a, b) {
+    return a.startDate < b.startDate ? -1 : (a.startDate > b.startDate ? 1 : 0);
+  });
+  // 仅合并真正连续的分段记录（同一阵月经用户分两次记）：间隔 ≤3 天才合并；
+  // 不再用大间隔合并，避免把月经后的异常出血吞进经期长度、污染预测。
+  var MERGE_GAP = 3;
+  var merged = [];
+  for (var j = 0; j < periods.length; j++) {
+    var c = periods[j];
+    var p = { start: c.startDate, end: c.endDate, dur: c.endDate ? (daysBetween(c.startDate, c.endDate) + 1) : 1 };
+    if (merged.length && daysBetween(merged[merged.length - 1].start, p.start) <= MERGE_GAP) {
+      var prev = merged[merged.length - 1];
+      if (p.end && (!prev.end || p.end > prev.end)) prev.end = p.end;
+      prev.dur = prev.end ? (daysBetween(prev.start, prev.end) + 1) : prev.dur;
+    } else {
+      merged.push(p);
+    }
+  }
+  return merged;
+}
+
 function predictNextPeriod() {
-  var completed = getCompletedCycles();
-  var current = getCurrentCycle();
-  if (completed.length === 0) return null;
+  var realPeriods = getRealPeriods();
+  if (realPeriods.length === 0) return null;
 
-  // Average cycle length (gap between consecutive start dates)
+  // 平均周期长度（相邻真实经期开始日间隔）
   var cycleLengths = [];
-  for (var i = 1; i < state.data.cycles.length; i++) {
-    cycleLengths.push(daysBetween(state.data.cycles[i-1].startDate, state.data.cycles[i].startDate));
+  for (var i = 1; i < realPeriods.length; i++) {
+    cycleLengths.push(daysBetween(realPeriods[i - 1].start, realPeriods[i].start));
   }
-  if (cycleLengths.length === 0) {
-    // Only 1 cycle ever, use default 28
-    cycleLengths.push(28);
-  }
+  if (cycleLengths.length === 0) cycleLengths.push(28);
+  var avgCycle = Math.round(cycleLengths.reduce(function(a, b) { return a + b; }, 0) / cycleLengths.length);
 
-  var avgCycle = 0;
-  for (var i = 0; i < cycleLengths.length; i++) avgCycle += cycleLengths[i];
-  avgCycle = Math.round(avgCycle / cycleLengths.length);
-
-  // Average period length
+  // 平均经期长度
   var periodLengths = [];
-  for (var i = 0; i < completed.length; i++) {
-    periodLengths.push(daysBetween(completed[i].startDate, completed[i].endDate));
+  for (var k = 0; k < realPeriods.length; k++) {
+    if (realPeriods[k].end) periodLengths.push(realPeriods[k].dur);
   }
-  var avgPeriod = 0;
-  for (var i = 0; i < periodLengths.length; i++) avgPeriod += periodLengths[i];
-  avgPeriod = Math.round(avgPeriod / periodLengths.length);
+  var avgPeriod = periodLengths.length ? Math.round(periodLengths.reduce(function(a, b) { return a + b; }, 0) / periodLengths.length) : 3;
   if (avgPeriod < 2) avgPeriod = 3;
 
-  // Predict next
-  var lastCycle = current || completed[completed.length - 1];
-  var lastStart = lastCycle.startDate;
+  // 锚点：进行中的经期优先，否则最近一次真实经期
+  var current = getCurrentCycle();
+  var lastStart = current ? current.startDate : realPeriods[realPeriods.length - 1].start;
   var nextStart = addDays(lastStart, avgCycle);
   var nextEnd = addDays(nextStart, avgPeriod - 1);
 
@@ -1563,11 +1974,31 @@ function predictNextPeriod() {
 }
 
 function getAllPeriodDates() {
+  var classification = classifyCycles();
   var dates = {};
   for (var i = 0; i < state.data.cycles.length; i++) {
     var c = state.data.cycles[i];
+    if (classification[c.id] !== 'period') continue; // 异常出血不画月经红框
     var d = new Date(c.startDate + 'T00:00:00');
     var endD = new Date((c.endDate || todayStr()) + 'T00:00:00');
+    while (d.getTime() <= endD.getTime()) {
+      var key = d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+      dates[key] = true;
+      d.setDate(d.getDate() + 1);
+    }
+  }
+  return dates;
+}
+
+// 异常出血（排卵期/不规则出血）日期，用于日历浅色标记，不计入预测
+function getAllSpottingDates() {
+  var classification = classifyCycles();
+  var dates = {};
+  for (var i = 0; i < state.data.cycles.length; i++) {
+    var c = state.data.cycles[i];
+    if (classification[c.id] !== 'spotting' || !c.endDate) continue;
+    var d = new Date(c.startDate + 'T00:00:00');
+    var endD = new Date(c.endDate + 'T00:00:00');
     while (d.getTime() <= endD.getTime()) {
       var key = d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
       dates[key] = true;
@@ -1598,6 +2029,94 @@ function findCycleIdForDate(date) {
   return '';
 }
 
+/* ===== Cycle Phase (月经期 / 卵泡期 / 排卵期 / 黄体期) ===== */
+var PHASES = {
+  menstrual: {key:'menstrual', label:'月经期', short:'经期', desc:'子宫内膜脱落出血', color:'#E8657A', bg:'#FCEEF1', text:'#C94B63'},
+  follicular:{key:'follicular', label:'卵泡期', short:'卵泡', desc:'卵泡发育成熟', color:'#5B8FD9', bg:'#EAF1FB', text:'#3A6BB0'},
+  ovulation: {key:'ovulation', label:'排卵期', short:'排卵', desc:'易受孕', color:'#2E9E6B', bg:'#E7F5EE', text:'#1F7A4D'},
+  luteal:    {key:'luteal', label:'黄体期', short:'黄体', desc:'黄体形成', color:'#D9962E', bg:'#FBF1E0', text:'#B9792B'}
+};
+
+// 0-based day difference between two 'YYYY-MM-DD' dates (today vs date => negative if date is before today)
+function dateDiffDays(a, b) {
+  var s = new Date(a + 'T00:00:00').getTime();
+  var e = new Date(b + 'T00:00:00').getTime();
+  return Math.round((e - s) / 86400000);
+}
+
+// Returns a phase object (from PHASES) for a given date, based on the predicted cycle.
+// Anchored on the predicted next period start, repeating every avgCycle days.
+// NOTE: this is an estimate for visualization, real cycles vary.
+function getPhaseForDate(dateStr, prediction) {
+  if (!prediction) return null;
+  var L = prediction.cycleLength;
+  var P = prediction.periodLength;
+  if (L < 14) L = 28;
+  if (P < 1) P = 1;
+  if (P > L - 2) P = L - 2; // safety clamp
+  var base = prediction.startDate;             // predicted next period start
+  var diff = dateDiffDays(base, dateStr);      // 0 if same day as next period start
+  var cycleDay = ((diff % L) + L) % L;         // 0..L-1 (day-of-cycle)
+  var ovDay = L - 14;                          // ovulation ~14 days before next period
+  var fertileStart = ovDay - 5;                // fertile window (sperm can survive ~5 days)
+  var fertileEnd = ovDay + 1;                  // egg viable ~1 day
+  if (fertileStart < P) fertileStart = P;
+  if (fertileEnd < fertileStart) fertileEnd = fertileStart;
+  if (cycleDay >= 0 && cycleDay <= P - 1) return PHASES.menstrual;
+  if (cycleDay >= fertileStart && cycleDay <= fertileEnd) return PHASES.ovulation;
+  if (cycleDay >= P && cycleDay < fertileStart) return PHASES.follicular;
+  if (cycleDay > fertileEnd && cycleDay < L) return PHASES.luteal;
+  return null;
+}
+
+// Today's phase label for home/calendar banner
+function getTodayPhaseLabel(prediction) {
+  var cur = getCurrentCycle();
+  if (cur) return PHASES.menstrual.label;
+  if (!prediction) return '';
+  var ph = getPhaseForDate(todayStr(), prediction);
+  return ph ? ph.label : '';
+}
+
+// Days until next predicted period (0 = today)
+function getDaysToNextPeriod(prediction) {
+  if (!prediction) return null;
+  return dateDiffDays(todayStr(), prediction.startDate);
+}
+
+// Build a "next period countdown" card for the home page.
+// Works even when no cycle is currently ongoing (period has ended).
+function buildCountdownCard(prediction) {
+  if (!prediction) return '';
+  var d = getDaysToNextPeriod(prediction);
+  var phaseLabel = getTodayPhaseLabel(prediction);
+  var countdownText, countdownSub;
+  if (d === 0) {
+    countdownText = '今天来潮';
+    countdownSub = '预计 ' + formatDateFull(prediction.startDate);
+  } else if (d > 0) {
+    countdownText = '还有 ' + d + ' 天';
+    countdownSub = '预计 ' + formatDateFull(prediction.startDate) + ' 来潮';
+  } else {
+    countdownText = '预计 ' + formatDate(prediction.startDate);
+    countdownSub = '下次经期';
+  }
+  var phaseHtml = phaseLabel
+    ? '<div style="text-align:center;margin-top:12px;font-size:13px;color:var(--text-secondary)">现在处于 <span style="font-weight:600;color:var(--primary-dark)">' + phaseLabel + '</span></div>'
+    : '';
+  return '<div class="predict-card" style="cursor:pointer" onclick="nav(\'calendar\')">' +
+    '<div class="predict-title">🔮 下次经期倒计时</div>' +
+    '<div style="text-align:center">' +
+    '<div style="font-size:30px;font-weight:700;color:var(--primary);line-height:1.1">' + countdownText + '</div>' +
+    '<div style="font-size:13px;color:var(--text-secondary);margin-top:6px">' + countdownSub + '</div>' +
+    '</div>' + phaseHtml +
+    '<div class="predict-stats" style="margin-top:14px">' +
+    '<div class="predict-stat"><div class="predict-num" style="font-size:20px">' + prediction.cycleLength + '</div><div class="predict-label">天周期</div></div>' +
+    '<div class="predict-divider"></div>' +
+    '<div class="predict-stat"><div class="predict-num" style="font-size:20px">' + prediction.periodLength + '</div><div class="predict-label">天经期</div></div>' +
+    '</div></div>';
+}
+
 /* ===== Calendar Page ===== */
 function getDaysInMonth(year, month) {
   return new Date(year, month + 1, 0).getDate();
@@ -1623,6 +2142,7 @@ function renderCalendar() {
   var dayHeaders = ['日','一','二','三','四','五','六'];
 
   var periodDates = getAllPeriodDates();
+  var spottingDates = getAllSpottingDates();
   var prediction = predictNextPeriod();
   var predictedDates = getPredictedDates(prediction);
   var today = todayStr();
@@ -1634,7 +2154,7 @@ function renderCalendar() {
   var html = '';
   if (prediction) {
     var pStart = prediction.startDate;
-    var cycleCount = state.data.cycles.length;
+    var cycleCount = getRealPeriods().length;
     var confidence = cycleCount >= 3 ? '较准确' : '初步估算';
     html += '<div class="predict-card">' +
       '<div class="predict-title">🔮 经期预测 · <span style="font-size:12px;color:var(--text-secondary);font-weight:400">' + confidence + '（基于' + cycleCount + '个周期）</span></div>' +
@@ -1657,6 +2177,23 @@ function renderCalendar() {
       '</div>';
   }
 
+  // 今日所处阶段 banner（按阶段给白话提示）
+  var todaysPhaseObj = null;
+  if (getCurrentCycle()) todaysPhaseObj = PHASES.menstrual;
+  else if (prediction) todaysPhaseObj = getPhaseForDate(todayStr(), prediction);
+  var dtn = getDaysToNextPeriod(prediction);
+  if (todaysPhaseObj) {
+    var bannerSub = '';
+    if (todaysPhaseObj.key === 'ovulation') bannerSub = ' · 易受孕窗口';
+    else if (todaysPhaseObj.key === 'follicular') bannerSub = ' · 经期刚结束';
+    else if (todaysPhaseObj.key === 'menstrual') bannerSub = ' · 正在经期';
+    else if (todaysPhaseObj.key === 'luteal') {
+      if (dtn !== null && dtn > 0) bannerSub = ' · 距下次经期还有 ' + dtn + ' 天';
+      else if (dtn === 0) bannerSub = ' · 今天预计来潮';
+    }
+    html += '<div class="phase-banner">今天：<strong>' + todaysPhaseObj.label + '</strong>' + bannerSub + '</div>';
+  }
+
   // Month navigation
   html += '<div class="flex-between" style="margin-bottom:10px;padding:0 4px">' +
     '<button class="btn btn-sm" onclick="changeCalendarMonth(-1)" style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:18px">◀</button>' +
@@ -1676,35 +2213,63 @@ function renderCalendar() {
     var date = year + '-' + pad2(month + 1) + '-' + pad2(day);
     var isPeriod = !!periodDates[date];
     var isPredicted = !!predictedDates[date];
+    var isSpotting = !!spottingDates[date];
     var isTD = date === today;
     var cycleId = '';
-    if (isPeriod) cycleId = findCycleIdForDate(date);
+    if (isPeriod || isSpotting) cycleId = findCycleIdForDate(date);
+    var hasLog = hasDaySymptoms(date);
+
+    // Estimate phase for days that are not actual/predicted period or spotting days
+    var phase = null;
+    if (!isPeriod && !isPredicted && !isSpotting) phase = getPhaseForDate(date, prediction);
 
     var cls = 'calendar-cell';
     if (isPeriod) cls += ' period-day';
     if (isPredicted && !isPeriod) cls += ' predicted-day';
+    if (isSpotting && !isPeriod && !isPredicted) cls += ' spotting-day';
+    if (phase) cls += ' ' + phase.key + '-day';
     if (isTD) cls += ' today';
-    if (cycleId) cls += ' has-records';
+    cls += ' has-records'; // 任意日期都可点击进入记录
 
     var onClick = '';
     if (cycleId) {
       onClick = ' onclick="nav(\'dayDetail\',{cycleId:\'' + cycleId + '\',date:\'' + date + '\'})"';
+    } else {
+      onClick = ' onclick="nav(\'symptoms\',{date:\'' + date + '\'})"';
+    }
+
+    // marker: period/predicted -> dot ; spotting -> 出血小标 ; phase -> 阶段小标
+    var marker = '';
+    if (isPeriod || isPredicted) {
+      marker = '<span class="calendar-dot"></span>';
+    } else if (isSpotting) {
+      marker = '<span class="calendar-spot-tag">出血</span>';
+    } else if (phase) {
+      var PHASE_TAG = { menstrual:'经期', follicular:'卵泡', ovulation:'易孕', luteal:'经前' };
+      var tagText = PHASE_TAG[phase.key] || '';
+      marker = '<span class="calendar-phase-tag" style="color:' + phase.color + '">' + tagText + '</span>';
     }
 
     html += '<div class="' + cls + '"' + onClick + '>' +
+      (hasLog ? '<span class="calendar-log-dot"></span>' : '') +
       '<span class="calendar-day-num">' + day + '</span>' +
-      ((isPeriod || isPredicted) ? '<span class="calendar-dot"></span>' : '') +
+      marker +
       '</div>';
   }
   html += '</div>';
 
-  // Legend
+  // Legend（全名 + 白话说明，让用户无需猜）
   html += '<div class="calendar-legend">' +
-    '<span><span class="calendar-legend-dot period"></span> 已来潮</span>' +
-    '<span><span class="calendar-legend-dot predicted"></span> 预测来潮</span>' +
+    '<span><span class="calendar-legend-dot" style="background:#FCEEF1;border:1px solid #E8657A"></span> 月经期（来姨妈）</span>' +
+    '<span><span class="calendar-legend-dot spotting"></span> 异常出血（非经期）</span>' +
+    '<span><span class="calendar-legend-dot" style="background:#EAF1FB;border:1px solid #5B8FD9"></span> 卵泡期（经期后）</span>' +
+    '<span><span class="calendar-legend-dot" style="background:#E7F5EE;border:1px solid #2E9E6B"></span> 排卵期（易受孕）</span>' +
+    '<span><span class="calendar-legend-dot" style="background:#FBF1E0;border:1px solid #D9962E"></span> 黄体期（经前）</span>' +
+    '<span><span class="calendar-legend-dot log"></span> 有症状/白带记录</span>' +
     '<span><span class="calendar-today-mark"></span> 今天</span>' +
     '</div>' +
-    '<div style="text-align:center;margin-top:8px;font-size:12px;color:var(--text-tertiary)">点击日期查看当天详情</div>';
+    '<div style="text-align:center;margin-top:8px;font-size:12px;color:var(--text-tertiary)">格子里的「经期/卵泡/易孕/经前」即当前所处阶段 · 月经期为记录或预测，其余为按周期估算 · <span style="color:#8A8F99">浅灰「出血」为异常出血，不计入预测</span></div>' +
+    '<div style="text-align:center;margin-top:6px;font-size:12px;color:var(--text-tertiary)">点击任意日期：有出血看当日详情，没出血也能记白带、胸涨等</div>';
 
   el.innerHTML = html;
 }
@@ -1731,6 +2296,18 @@ function navigateTo(page, params) {
   if (title) title.textContent = PAGE_TITLES[page] || '';
 
   var isSub = arrayContains(SUB_PAGES, page);
+
+  // 「症状打卡」页：若是从子页面（经期日历 / 当日详情 / 本周期每日）点进来的，
+  // 也按子页面处理 —— 左上角显示返回按钮、隐藏底部导航，方便返回上一层。
+  if (page === 'symptoms') {
+    var from = state.navHistory.length > 0 ? state.navHistory[state.navHistory.length - 1].page : null;
+    if (from && arrayContains(SUB_PAGES, from)) state.symptomsAsSub = true;
+    else if (from !== 'symptoms') state.symptomsAsSub = false;
+    if (state.symptomsAsSub) isSub = true;
+  } else {
+    state.symptomsAsSub = false;
+  }
+
   var back = document.getElementById('headerBack');
   if (back) back.style.display = isSub ? 'flex' : 'none';
 
@@ -1774,26 +2351,28 @@ function renderPage(page, params) {
 /* ===== Home Page ===== */
 function renderHome() {
   var cycle = getCurrentCycle();
+  var prediction = predictNextPeriod();
   var el = document.getElementById('page-home');
 
   if (!cycle) {
-    var lastEnded = getLastEndedCycle();
+    var lastEnded = getLastEndedPeriodCycle();
     var endedDays = 0;
     var recentlyEnded = false;
     if (lastEnded) {
       endedDays = daysBetween(lastEnded.endDate, todayStr());
-      recentlyEnded = endedDays <= 3;
+      recentlyEnded = endedDays >= 0 && endedDays <= 3;
     }
 
     if (recentlyEnded) {
       // Recently ended cycle - offer to continue
       var stats = getCycleStats(lastEnded.id);
-      el.innerHTML = '' +
-        '<div class="predict-card" style="margin-bottom:12px">' +
+      el.innerHTML = buildCountdownCard(prediction) +
+        '<div class="predict-card" style="margin-bottom:12px;cursor:pointer" onclick="nav(\'cycleDaily\',{cycleId:\'' + lastEnded.id + '\'})">' +
         '<div class="predict-title">🔔 上次经期刚结束</div>' +
         '<div style="text-align:center;margin:8px 0">' +
         '<div style="font-size:20px;font-weight:700;color:var(--primary-dark)">' + formatDate(lastEnded.startDate) + ' ~ ' + formatDate(lastEnded.endDate) + '</div>' +
         '<div style="font-size:14px;color:var(--text-secondary);margin-top:4px">持续 ' + daysBetween(lastEnded.startDate, lastEnded.endDate) + ' 天 · ' + endedDays + ' 天前结束</div>' +
+        '<div style="font-size:12px;color:var(--text-tertiary);margin-top:8px">查看这次的每日记录 ›</div>' +
         '</div></div>' +
         '<div class="empty-state" style="padding:12px 20px">' +
         '<div class="empty-icon" style="font-size:42px">🥺</div>' +
@@ -1801,15 +2380,15 @@ function renderHome() {
         '<div class="empty-desc">按错了不用担心，可以重新打开上个周期，继续记录更换和症状。</div>' +
         '<button class="btn btn-primary" style="max-width:260px;margin:8px auto" onclick="reopenLastEnded()">重新打开上个周期</button>' +
         '<div style="margin-top:12px;font-size:13px;color:var(--text-tertiary)">—— 或者 ——</div>' +
-        '<button class="btn btn-secondary" style="max-width:260px;margin:8px auto" onclick="showStartCycleModal()">开始新周期</button>' +
+        '<button class="btn btn-secondary" style="max-width:260px;margin:8px auto" onclick="showStartCycleModal()">记录出血</button>' +
         '</div>';
     } else {
-      el.innerHTML = '' +
+      el.innerHTML = buildCountdownCard(prediction) +
         '<div class="empty-state">' +
         '<div class="empty-icon">🌸</div>' +
-        '<div class="empty-title">开始记录你的经期</div>' +
+        '<div class="empty-title">开始记录出血</div>' +
         '<div class="empty-desc">点击下方按钮，记录本次来潮日期<br>数据仅保存在本机，他人无法查看</div>' +
-        '<button class="btn btn-primary" style="max-width:260px;margin:0 auto" onclick="showStartCycleModal()">开始新周期</button>' +
+        '<button class="btn btn-primary" style="max-width:260px;margin:0 auto" onclick="showStartCycleModal()">记录出血</button>' +
         '</div>';
     }
     return;
@@ -1870,19 +2449,8 @@ function renderHome() {
     '</div></div>' +
     '<div class="card"><div class="card-title">📊 出血量分布</div>' + bleedingHtml + '</div>';
 
-  // Prediction snippet (compact)
-  var prediction = predictNextPeriod();
-  if (prediction) {
-    el.innerHTML += '<div class="predict-card" style="cursor:pointer" onclick="nav(\'calendar\')">' +
-      '<div class="predict-title">🔮 经期预测</div>' +
-      '<div style="display:flex;align-items:center;gap:12px">' +
-      '<div style="flex:1;text-align:center"><div style="font-size:13px;color:var(--text-secondary)">平均周期</div><div style="font-size:22px;font-weight:700;color:var(--primary)">' + prediction.cycleLength + '天</div></div>' +
-      '<div style="width:1px;height:36px;background:rgba(232,101,122,0.2)"></div>' +
-      '<div style="flex:1;text-align:center"><div style="font-size:13px;color:var(--text-secondary)">下次预计</div><div style="font-size:14px;font-weight:700;color:var(--primary-dark)">' + formatDate(prediction.startDate) + '</div></div>' +
-      '<div style="width:1px;height:36px;background:rgba(232,101,122,0.2)"></div>' +
-      '<div style="flex:1;text-align:center"><div style="font-size:13px;color:var(--text-secondary)">持续约</div><div style="font-size:22px;font-weight:700;color:var(--primary)">' + prediction.periodLength + '天</div></div>' +
-      '</div></div>';
-  }
+  // 下次经期倒计时（即使经期已结束也会显示）
+  el.innerHTML += buildCountdownCard(prediction);
 
   el.innerHTML +=
     '<div class="btn-row">' +
@@ -1915,7 +2483,11 @@ function renderRecord() {
     state.selectedProduct = editChange.productId;
     state.selectedBleeding = editChange.bleeding;
   } else {
-    state.selectedProduct = PRODUCTS[0].id;
+    // 刚添加完自定义用品时，默认选中它（仅生效一次）
+    var prefer = state.justAddedProduct;
+    state.justAddedProduct = null;
+    if (prefer && getProductById(prefer)) state.selectedProduct = prefer;
+    else state.selectedProduct = PRODUCTS[0].id;
     state.selectedBleeding = BLEEDING[1].id;
   }
 
@@ -1928,19 +2500,25 @@ function renderRecord() {
     }
     var reopenBtn = recentlyEnded2 ? '<button class="btn btn-secondary" style="max-width:200px;margin:8px auto 0" onclick="reopenLastEnded()">重新打开上个周期</button>' : '';
     el.innerHTML = '<div class="empty-state"><div class="empty-icon">📝</div>' +
-      '<div class="empty-title">请先开始新周期</div>' +
-      '<div class="empty-desc">记录更换前需要先开始一个经期周期</div>' +
-      '<button class="btn btn-primary" style="max-width:200px;margin:16px auto 0" onclick="showStartCycleModal()">开始新周期</button>' +
+      '<div class="empty-title">还没有出血记录</div>' +
+      '<div class="empty-desc">月经或异常出血，都从这里开始记录</div>' +
+      '<button class="btn btn-primary" style="max-width:200px;margin:16px auto 0" onclick="showStartCycleModal()">记录出血</button>' +
       reopenBtn + '</div>';
     return;
   }
 
+  var allProds = getAllProducts();
+  var hasCustomProd = (visibleCustomProductCount() > 0);
   var chipsHtml = '';
-  for (var i = 0; i < PRODUCTS.length; i++) {
-    var p = PRODUCTS[i];
+  for (var i = 0; i < allProds.length; i++) {
+    var p = allProds[i];
     var isSel = (state.selectedProduct === p.id) ? ' selected' : '';
-    chipsHtml += '<div class="chip' + isSel + '" data-product="' + p.id + '" onclick="selectProduct(this,\'' + p.id + '\')">' + p.label + '</div>';
+    // 编辑态下，自建用品右上角出现删除角标
+    var delX = (p.custom && state.editingProducts) ?
+      '<span class="chip-x" onclick="event.stopPropagation();confirmDeleteCustomProduct(\'' + p.id + '\')">✕</span>' : '';
+    chipsHtml += '<div class="chip' + isSel + '" data-product="' + p.id + '" onclick="selectProduct(this,\'' + p.id + '\')">' + delX + p.label + '</div>';
   }
+  chipsHtml += '<div class="chip chip-add" onclick="showAddProductModal()">＋ 自定义</div>';
 
   var bleedingHtml = '';
   for (var j = 0; j < BLEEDING.length; j++) {
@@ -1962,7 +2540,9 @@ function renderRecord() {
     '<input type="text" class="form-input picker-input" id="recDate" value="' + date + '" readonly onclick="showDatePicker({current:this.value,onConfirm:function(v){document.getElementById(\'recDate\').value=v}})"></div>' +
     '<div class="form-group"><div class="form-label">时间</div>' +
     '<input type="text" class="form-input picker-input" id="recTime" value="' + time + '" readonly onclick="showTimePicker({current:this.value,onConfirm:function(v){document.getElementById(\'recTime\').value=v}})"></div></div></div>' +
-    '<div class="card"><div class="card-title">🩸 选择用品</div>' +
+    '<div class="card"><div class="card-title">🩸 选择用品' +
+    (hasCustomProd ? '<span class="sym-edit-btn" style="margin-left:auto" onclick="toggleEditProducts()">' + (state.editingProducts ? '完成' : '编辑') + '</span>' : '') +
+    '</div>' +
     '<div class="chip-grid" id="productGrid">' + chipsHtml + '</div></div>' +
     '<div class="card"><div class="card-title">💧 出血量</div>' +
     '<div class="bleeding-grid" id="bleedingGrid">' + bleedingHtml + '</div></div>' +
@@ -1974,9 +2554,83 @@ function renderRecord() {
 
 function selectProduct(el, id) {
   var chips = document.getElementById('productGrid').getElementsByClassName('chip');
-  for (var i = 0; i < chips.length; i++) chips[i].className = 'chip';
+  for (var i = 0; i < chips.length; i++) {
+    // 只重置用品 chip（带 data-product）；「＋ 自定义」那个保持虚线样式
+    if (chips[i].getAttribute('data-product')) chips[i].className = 'chip';
+  }
   el.className = 'chip selected';
   state.selectedProduct = id;
+}
+
+/* ===== 自定义用品：增 / 删 / 编辑态 ===== */
+function visibleCustomProductCount() {
+  var cp = state.data.customProducts || [];
+  var n = 0;
+  for (var i = 0; i < cp.length; i++) { if (!cp[i].retired) n++; }
+  return n;
+}
+
+function toggleEditProducts() {
+  state.editingProducts = !state.editingProducts;
+  renderRecord();
+}
+
+function pickProductType(el) {
+  var grid = document.getElementById('modalProdTypeGrid');
+  if (grid) {
+    var items = grid.getElementsByClassName('prod-type');
+    for (var i = 0; i < items.length; i++) items[i].className = 'prod-type';
+  }
+  el.className = 'prod-type selected';
+  var inp = document.getElementById('modalProdType');
+  if (inp) inp.value = el.getAttribute('data-type');
+}
+
+function showAddProductModal() {
+  var typeHtml = '<input type="hidden" name="prodType" id="modalProdType" value="napkin">' +
+    '<div class="prod-type-grid" id="modalProdTypeGrid">';
+  for (var i = 0; i < PRODUCT_TYPES.length; i++) {
+    var t = PRODUCT_TYPES[i];
+    typeHtml += '<div class="prod-type' + (i === 0 ? ' selected' : '') + '" data-type="' + t.key + '" onclick="pickProductType(this)">' + t.label + '</div>';
+  }
+  typeHtml += '</div>';
+
+  showModal({
+    title: '添加自定义用品',
+    body: '<div class="form-group" style="margin:0 0 14px"><div class="form-label">名称</div>' +
+      '<input type="text" class="form-input" name="prodName" id="modalProdName" placeholder="例如：260mm、月经杯、液体卫生巾" maxlength="10"></div>' +
+      '<div class="form-label">归入哪类统计</div>' + typeHtml +
+      '<div style="font-size:12px;color:var(--text-tertiary);margin-top:10px">添加后会出现在「选择用品」里，以后记录可直接点选</div>',
+    confirmText: '添加',
+    onConfirm: function(vals) {
+      var name = (vals.prodName || '').trim();
+      if (!name) { showToast('请输入用品名称'); return; }
+      if (name.length > 10) { showToast('名称请控制在 10 个字以内'); return; }
+      var np = addCustomProduct(name, vals.prodType || 'napkin');
+      if (np) state.justAddedProduct = np.id;   // 加完直接选中，方便立刻记录
+      vibrate();
+      showToast('✓ 已添加');
+      renderRecord();
+    }
+  });
+}
+
+function confirmDeleteCustomProduct(id) {
+  var p = getProductById(id);
+  showModal({
+    title: '删除自定义用品',
+    body: '确定删除「' + (p ? p.label : '该用品') + '」吗？' +
+      '<div style="font-size:12px;color:var(--text-tertiary);margin-top:8px">删除后不再出现在「选择用品」里，已保存的记录不受影响</div>',
+    confirmText: '删除',
+    danger: true,
+    onConfirm: function() {
+      deleteCustomProduct(id);
+      if (visibleCustomProductCount() === 0) state.editingProducts = false;
+      vibrate();
+      showToast('已删除');
+      renderRecord();
+    }
+  });
 }
 
 function selectBleeding(el, id) {
@@ -2046,39 +2700,20 @@ function cancelEdit(skipNav) {
 function renderSymptoms(params) {
   params = params || {};
   var el = document.getElementById('page-symptoms');
-  var cycle = getCurrentCycle();
   var editIndex = (typeof params.editIndex === 'number' && params.editIndex >= 0) ? params.editIndex : -1;
   var date;
-  if (editIndex >= 0) {
+  if (editIndex >= 0 && params.date) {
     date = params.date;
     state.editingSymptomIndex = editIndex;
     state.symptomsDate = date;
   } else {
-    date = state.symptomsDate || todayStr();
+    date = params.date || state.symptomsDate || todayStr();
+    state.symptomsDate = date;
     state.editingSymptomIndex = -1;
-    state.editingSymptomCycleId = null;
   }
-  var entries = cycle ? (cycle.symptoms[date] || []) : [];
+  var entries = getDaySymptoms(date);
   var cur = (editIndex >= 0 && entries[editIndex]) ? entries[editIndex] : null;
   state.selectedSymptomsArr = cur ? (cur.selected || []).slice() : [];
-
-  if (!cycle) {
-    var lastEnded3 = getLastEndedCycle();
-    var recentlyEnded3 = false;
-    if (lastEnded3) {
-      var ed2 = daysBetween(lastEnded3.endDate, todayStr());
-      recentlyEnded3 = ed2 <= 3;
-    }
-    var reopenBtn2 = recentlyEnded3 ? '<button class="btn btn-secondary" style="max-width:200px;margin:8px auto 0" onclick="reopenLastEnded()">重新打开上个周期</button>' : '';
-    el.innerHTML = '<div class="empty-state"><div class="empty-icon">🌡️</div>' +
-      '<div class="empty-title">请先开始新周期</div>' +
-      '<div class="empty-desc">症状打卡前需要先开始一个经期周期</div>' +
-      '<button class="btn btn-primary" style="max-width:200px;margin:16px auto 0" onclick="showStartCycleModal()">开始新周期</button>' +
-      reopenBtn2 + '</div>';
-    return;
-  }
-
-  var entries = cycle.symptoms[date] || [];
 
   // 列出当日已有的症状记录（可编辑 / 删除）
   var listHtml = '';
@@ -2090,28 +2725,65 @@ function renderSymptoms(params) {
       if (ent.selected) {
         for (var li = 0; li < ent.selected.length; li++) {
           var sl = getSymptomById(ent.selected[li]);
-          lblHtml += '<span class="day-stat" style="background:#E3F2FD;color:#1565C0">' + (sl ? sl.label : ent.selected[li]) + '</span>';
+          lblHtml += '<span class="day-stat" style="background:#E3F2FD;color:#1565C0">' + (sl ? sl.label : '已删除的症状') + '</span>';
         }
       }
       var cstHtml = (ent.custom && ent.custom.trim() !== '') ? '<div style="font-size:13px;color:#666;margin-top:4px">' + ent.custom + '</div>' : '';
       listHtml += '<div style="display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid #f0f0f0">' +
         '<div style="flex:1">' + lblHtml + cstHtml + (lblHtml === '' && cstHtml === '' ? '<span style="color:#bbb;font-size:13px">空记录</span>' : '') + '</div>' +
-        '<button style="border:none;background:#FCEEF1;color:#C94B63;border-radius:6px;width:32px;height:32px;font-size:15px;flex-shrink:0" onclick="editSymptomEntry(\'' + cycle.id + '\',\'' + date + '\',' + ei + ')">✎</button>' +
-        '<button style="border:none;background:#FFEBEE;color:#D32F2F;border-radius:6px;width:32px;height:32px;font-size:15px;flex-shrink:0" onclick="confirmDeleteSymptomEntry(\'' + cycle.id + '\',\'' + date + '\',' + ei + ')">✕</button>' +
+        '<button style="border:none;background:#FCEEF1;color:#C94B63;border-radius:6px;width:32px;height:32px;font-size:15px;flex-shrink:0" onclick="editSymptomEntry(\'' + date + '\',' + ei + ')">✎</button>' +
+        '<button style="border:none;background:#FFEBEE;color:#D32F2F;border-radius:6px;width:32px;height:32px;font-size:15px;flex-shrink:0" onclick="confirmDeleteSymptomEntry(\'\',\'' + date + '\',' + ei + ')">✕</button>' +
         '</div>';
     }
     listHtml += '</div>';
   }
 
-  // 录入表单：编辑模式预填，新增模式清空
+  // 录入表单：编辑模式预填，新增模式清空（按大类分组，图标网格选择）
   var isEdit = (editIndex >= 0);
   var formCustom = cur ? (cur.custom || '') : '';
-  var checksHtml = '';
-  for (var i = 0; i < SYMPTOMS.length; i++) {
-    var s = SYMPTOMS[i];
-    var checked = arrayContains(state.selectedSymptomsArr, s.id);
-    var cls = checked ? 'chip selected' : 'chip';
-    checksHtml += '<div class="' + cls + '" data-symptom="' + s.id + '" onclick="toggleSymptom(this,\'' + s.id + '\')">' + s.label + '</div>';
+  var allSyms = getAllSymptoms();
+
+  var groupsHtml = '';
+  for (var gi = 0; gi < SYMPTOM_GROUPS.length; gi++) {
+    var grp = SYMPTOM_GROUPS[gi];
+    var items = [];
+    for (var si = 0; si < allSyms.length; si++) {
+      var s0 = allSyms[si];
+      if ((s0.group || 'body') !== grp.key) continue;
+      // 退役项（如已拆分的「腹泻便秘」）不进选择器；但若旧记录里勾过，仍显示以便查看/取消
+      if (s0.retired && !arrayContains(state.selectedSymptomsArr, s0.id)) continue;
+      items.push(s0);
+    }
+    var isMore = (grp.key === 'more');
+    if (items.length === 0 && !isMore) continue;
+
+    var cells = '';
+    for (var ci = 0; ci < items.length; ci++) {
+      var s = items[ci];
+      var checked = arrayContains(state.selectedSymptomsArr, s.id);
+      // 只有用户自建项才可删除（内置补充项如肛门坠胀/长痘不可删）
+      var delBtn = (isMore && state.editingSymptoms && s.custom) ?
+        '<span class="sym-del" onclick="event.stopPropagation();confirmDeleteCustomSymptom(\'' + s.id + '\')">✕</span>' : '';
+      cells += '<div class="sym-cell' + (checked ? ' selected' : '') + '" data-symptom="' + s.id + '" onclick="toggleSymptom(this,\'' + s.id + '\')">' +
+        delBtn +
+        '<span class="sym-ico' + (s.custom ? ' sym-ico-custom' : '') + '">' + (s.icon || '✚') + '</span>' +
+        '<span class="sym-lbl">' + s.label + '</span>' +
+        '</div>';
+    }
+    if (isMore) {
+      cells += '<div class="sym-cell sym-add" onclick="showAddSymptomModal()">' +
+        '<span class="sym-ico">＋</span><span class="sym-lbl">添加症状</span></div>';
+    }
+
+    var editBtn = isMore ?
+      '<span class="sym-edit-btn" onclick="toggleEditSymptoms()">' + (state.editingSymptoms ? '完成' : '编辑') + '</span>' : '';
+    var emptyTip = (isMore && items.length === 0 && !state.editingSymptoms) ?
+      '<div class="sym-empty-tip">没有想记的？点「添加症状」自己建一个</div>' : '';
+
+    groupsHtml += '<div class="card">' +
+      '<div class="card-title sym-group-head"><span>' + grp.icon + ' ' + grp.label + '</span>' + editBtn + '</div>' +
+      emptyTip +
+      '<div class="sym-grid">' + cells + '</div></div>';
   }
 
   var formTitle = isEdit ? '✏️ 编辑症状记录' : '➕ 新增症状记录';
@@ -2119,10 +2791,11 @@ function renderSymptoms(params) {
   var cancelBtn = isEdit ? '<button class="btn btn-secondary" style="flex:1" onclick="cancelEditSymptom()">取消</button>' : '';
 
   el.innerHTML = listHtml +
+    '<div style="text-align:center;font-size:12px;color:var(--text-tertiary);margin:0 4px 10px">白带、胸涨、情绪等随时可记，不需要先有出血</div>' +
     '<div class="card"><div class="card-title">📅 日期</div>' +
     '<input type="text" class="form-input picker-input" id="symDate" value="' + date + '" readonly onclick="showDatePicker({current:this.value,onConfirm:function(v){document.getElementById(\'symDate\').value=v; state.symptomsDate=v; state.editingSymptomIndex=-1; state.editingSymptomCycleId=null; renderSymptoms();}})"></div>' +
-    '<div class="card"><div class="card-title">' + formTitle + '</div>' +
-    '<div class="chip-grid" id="symptomGrid">' + checksHtml + '</div></div>' +
+    '<div class="section-title">' + formTitle + '</div>' +
+    groupsHtml +
     '<div class="card"><div class="card-title">📝 补充说明（可选）</div>' +
     '<textarea class="form-input" id="symCustom" placeholder="记录今日身体其他感受...">' + formCustom + '</textarea></div>' +
     '<div style="display:flex;gap:8px">' +
@@ -2144,16 +2817,55 @@ function toggleSymptom(el, id) {
       if (state.selectedSymptomsArr[i] !== id) arr.push(state.selectedSymptomsArr[i]);
     }
     state.selectedSymptomsArr = arr;
-    el.className = 'chip';
+    el.className = 'sym-cell';
   } else {
     state.selectedSymptomsArr.push(id);
-    el.className = 'chip selected';
+    el.className = 'sym-cell selected';
   }
 }
 
+/* ===== 自定义症状：添加 / 编辑 / 删除 ===== */
+function toggleEditSymptoms() {
+  state.editingSymptoms = !state.editingSymptoms;
+  renderSymptoms();
+}
+
+function showAddSymptomModal() {
+  showModal({
+    title: '添加自定义症状',
+    body: '<div class="form-group" style="margin:0"><div class="form-label">症状名称</div>' +
+      '<input type="text" class="form-input" name="symName" id="modalSymName" placeholder="例如：怕冷、长痘、性欲变化" maxlength="8"></div>' +
+      '<div style="font-size:12px;color:var(--text-tertiary);margin-top:8px">添加后会出现在「更多症状」里，以后打卡可直接勾选</div>',
+    confirmText: '添加',
+    onConfirm: function(vals) {
+      var name = (vals.symName || '').trim();
+      if (!name) { showToast('请输入症状名称'); return; }
+      if (name.length > 8) { showToast('名称请控制在 8 个字以内'); return; }
+      addCustomSymptom(name);
+      vibrate();
+      showToast('✓ 已添加');
+      renderSymptoms();
+    }
+  });
+}
+
+function confirmDeleteCustomSymptom(id) {
+  var s = getSymptomById(id);
+  showModal({
+    title: '删除自定义症状',
+    body: '确定删除「' + (s ? s.label : '该症状') + '」吗？<div style="font-size:12px;color:var(--text-tertiary);margin-top:8px">仅从可选列表移除，已保存的打卡记录不受影响</div>',
+    confirmText: '删除',
+    danger: true,
+    onConfirm: function() {
+      deleteCustomSymptom(id);
+      vibrate();
+      showToast('已删除');
+      renderSymptoms();
+    }
+  });
+}
+
 function saveSymptomsData() {
-  var cycle = getCurrentCycle();
-  if (!cycle) return;
   var dateEl = document.getElementById('symDate');
   var customEl = document.getElementById('symCustom');
   if (!dateEl) return;
@@ -2161,7 +2873,7 @@ function saveSymptomsData() {
   var custom = customEl ? customEl.value.trim() : '';
   var idx = state.editingSymptomIndex;
   if (typeof idx !== 'number' || idx < 0) idx = undefined;
-  saveSymptoms(cycle.id, date, state.selectedSymptomsArr, custom, idx);
+  saveDaySymptom(date, state.selectedSymptomsArr, custom, idx);
   state.editingSymptomIndex = -1;
   vibrate();
   showToast('✓ 症状已保存');
@@ -2173,25 +2885,18 @@ function cancelEditSymptom() {
   renderSymptoms();
 }
 
-function editSymptomEntry(cycleId, date, index) {
+function editSymptomEntry(date, index) {
   state.symptomsDate = date;
   nav('symptoms', {date: date, editIndex: index});
 }
 
-function addSymptomEntry(cycleId, date) {
+function addSymptomEntry(date) {
   state.symptomsDate = date;
   nav('symptoms', {date: date});
 }
 
 function deleteSymptomEntry(cycleId, date, index) {
-  var c = getCycleById(cycleId);
-  if (!c || !c.symptoms[date]) return;
-  var arr = [];
-  for (var i = 0; i < c.symptoms[date].length; i++) {
-    if (i !== index) arr.push(c.symptoms[date][i]);
-  }
-  c.symptoms[date] = arr;
-  saveData();
+  deleteDaySymptom(date, index);
 }
 
 function confirmDeleteSymptomEntry(cycleId, date, index) {
@@ -2204,9 +2909,32 @@ function confirmDeleteSymptomEntry(cycleId, date, index) {
       deleteSymptomEntry(cycleId, date, index);
       vibrate();
       showToast('已删除');
-      nav('dayDetail', {cycleId: cycleId, date: date});
+      if (cycleId) nav('dayDetail', {cycleId: cycleId, date: date});
+      else nav('symptoms', {date: date});
     }
   });
+}
+
+/* 有序周期 id 列表：只含真实月经周期（异常出血不计入），按开始日期升序。
+   用于「本周期每日」页左右切换上一个 / 下一个周期。 */
+function getOrderedPeriodIds() {
+  var cls = classifyCycles();
+  var arr = [];
+  for (var i = 0; i < state.data.cycles.length; i++) {
+    var c = state.data.cycles[i];
+    if (cls[c.id] && cls[c.id] !== 'period') continue;
+    arr.push(c);
+  }
+  arr.sort(function(a, b) { return a.startDate < b.startDate ? -1 : (a.startDate > b.startDate ? 1 : 0); });
+  var ids = [];
+  for (var j = 0; j < arr.length; j++) ids.push(arr[j].id);
+  return ids;
+}
+
+/* 切换到上一个 / 下一个周期：替换当前页，不叠加返回层级（返回仍回上一层） */
+function switchCycle(cycleId) {
+  if (!cycleId) return;
+  navigateTo('cycleDaily', {cycleId: cycleId});
 }
 
 /* ===== Cycle Daily Page ===== */
@@ -2225,10 +2953,37 @@ function renderCycleDaily(params) {
   var ongoing = !cycle.endDate;
   var stats = getCycleStats(cycle.id);
 
+  // 上一个 / 下一个周期（左右切换）
+  var orderedIds = getOrderedPeriodIds();
+  var curIdx = -1;
+  for (var oi = 0; oi < orderedIds.length; oi++) {
+    if (orderedIds[oi] === cycle.id) { curIdx = oi; break; }
+  }
+  if (curIdx < 0) {
+    // 当前周期不在真实月经周期列表里（例如异常出血周期）：退化为全部周期按时间排序
+    var allSorted = state.data.cycles.slice().sort(function(a, b) {
+      return a.startDate < b.startDate ? -1 : (a.startDate > b.startDate ? 1 : 0);
+    });
+    orderedIds = [];
+    for (var ai = 0; ai < allSorted.length; ai++) orderedIds.push(allSorted[ai].id);
+    for (var aj = 0; aj < orderedIds.length; aj++) {
+      if (orderedIds[aj] === cycle.id) { curIdx = aj; break; }
+    }
+  }
+  var prevCycleId = curIdx > 0 ? orderedIds[curIdx - 1] : '';
+  var nextCycleId = (curIdx >= 0 && curIdx < orderedIds.length - 1) ? orderedIds[curIdx + 1] : '';
+  var prevBtn = '<div class="cycle-switch-btn' + (prevCycleId ? '' : ' disabled') + '"' +
+    (prevCycleId ? ' title="上一个周期" onclick="switchCycle(\'' + prevCycleId + '\')"' : '') + '>&#8249;</div>';
+  var nextBtn = '<div class="cycle-switch-btn' + (nextCycleId ? '' : ' disabled') + '"' +
+    (nextCycleId ? ' title="下一个周期" onclick="switchCycle(\'' + nextCycleId + '\')"' : '') + '>&#8250;</div>';
+
   var html = '<div class="card"><div class="cycle-info">' +
+    '<div style="display:flex;align-items:center;gap:6px">' + prevBtn +
+    '<div style="flex:1;min-width:0">' +
     '<div style="font-size:16px;font-weight:600">' + formatDateFull(cycle.startDate) +
     (cycle.endDate ? ' ~ ' + formatDate(cycle.endDate) : ' ～ 进行中') + '</div>' +
     '<div class="cycle-day-count" style="margin-top:4px">共 ' + dates.length + ' 天</div>' +
+    '</div>' + nextBtn + '</div>' +
     '<div style="margin-top:12px;display:flex;gap:6px;justify-content:center;flex-wrap:wrap">' +
     '<span class="day-stat" style="background:#FFE5E9;color:#C94B63">卫生巾 ' + stats.napkin + '</span>' +
     '<span class="day-stat" style="background:#FCEEF1;color:#E8657A">护垫 ' + stats.pad + '</span>' +
@@ -2251,7 +3006,7 @@ function renderCycleDaily(params) {
     var d = revDates[di];
     var dStats = getDayStats(cycle.id, d);
     var hasRecords = dStats.changes.length > 0;
-    var sym = cycle.symptoms[d];
+    var sym = getDaySymptoms(d);
     var statChips = '';
     if (hasRecords) {
       if (dStats.napkin > 0) statChips += '<span class="day-stat" style="background:#FFE5E9;color:#C94B63">卫生巾 ' + dStats.napkin + '</span>';
@@ -2292,7 +3047,7 @@ function renderDayDetail(params) {
   }
   var date = params.date;
   var stats = getDayStats(cycle.id, date);
-  var sym = cycle.symptoms[date];
+  var sym = getDaySymptoms(date);
 
   // sort changes by time
   var changes = stats.changes.slice();
@@ -2333,22 +3088,22 @@ function renderDayDetail(params) {
       if (ent2.selected) {
         for (var sii = 0; sii < ent2.selected.length; sii++) {
           var ss2 = getSymptomById(ent2.selected[sii]);
-          labels2 += '<span class="day-stat" style="background:#E3F2FD;color:#1565C0">' + (ss2 ? ss2.label : ent2.selected[sii]) + '</span>';
+          labels2 += '<span class="day-stat" style="background:#E3F2FD;color:#1565C0">' + (ss2 ? ss2.label : '已删除的症状') + '</span>';
         }
       }
       var cust2 = (ent2.custom && ent2.custom.trim() !== '') ? '<div style="font-size:14px;color:#666;line-height:1.6;background:#F8F9FA;padding:10px;border-radius:8px;margin-top:6px">' + ent2.custom + '</div>' : '';
       entriesHtml += '<div style="display:flex;align-items:flex-start;gap:8px;padding:10px 0;border-bottom:1px solid #f0f0f0">' +
         '<div style="flex:1">' + labels2 + cust2 + (labels2 === '' && cust2 === '' ? '<span style="color:#bbb;font-size:13px">空记录</span>' : '') + '</div>' +
-        '<button style="border:none;background:#FCEEF1;color:#C94B63;border-radius:6px;width:32px;height:32px;font-size:15px;flex-shrink:0" onclick="editSymptomEntry(\'' + cycle.id + '\',\'' + date + '\',' + ei2 + ')">✎</button>' +
+        '<button style="border:none;background:#FCEEF1;color:#C94B63;border-radius:6px;width:32px;height:32px;font-size:15px;flex-shrink:0" onclick="editSymptomEntry(\'' + date + '\',' + ei2 + ')">✎</button>' +
         '<button style="border:none;background:#FFEBEE;color:#D32F2F;border-radius:6px;width:32px;height:32px;font-size:15px;flex-shrink:0" onclick="confirmDeleteSymptomEntry(\'' + cycle.id + '\',\'' + date + '\',' + ei2 + ')">✕</button>' +
         '</div>';
     }
     symHtml = '<div class="card"><div class="card-title" style="display:flex;justify-content:space-between;align-items:center">🌡️ 当日症状' +
-      '<button style="border:none;background:#E8657A;color:#fff;border-radius:6px;font-size:13px;padding:6px 10px" onclick="addSymptomEntry(\'' + cycle.id + '\',\'' + date + '\')">＋ 添加</button></div>' +
+      '<button style="border:none;background:#E8657A;color:#fff;border-radius:6px;font-size:13px;padding:6px 10px" onclick="addSymptomEntry(\'' + date + '\')">＋ 添加</button></div>' +
       entriesHtml + '</div>';
   } else {
     symHtml = '<div class="card"><div class="card-title" style="display:flex;justify-content:space-between;align-items:center">🌡️ 当日症状' +
-      '<button style="border:none;background:#E8657A;color:#fff;border-radius:6px;font-size:13px;padding:6px 10px" onclick="addSymptomEntry(\'' + cycle.id + '\',\'' + date + '\')">＋ 添加</button></div>' +
+      '<button style="border:none;background:#E8657A;color:#fff;border-radius:6px;font-size:13px;padding:6px 10px" onclick="addSymptomEntry(\'' + date + '\')">＋ 添加</button></div>' +
       '<div style="text-align:center;color:#999;padding:14px;font-size:14px">当天没有症状记录</div></div>';
   }
 
@@ -2396,28 +3151,28 @@ function renderHistory() {
   if (cycles.length === 0) {
     el.innerHTML = '<div class="empty-state"><div class="empty-icon">📅</div>' +
       '<div class="empty-title">还没有历史记录</div>' +
-      '<div class="empty-desc">开始新周期后会自动保存历史</div></div>';
+      '<div class="empty-desc">记录出血后会自动保存历史</div></div>';
     return;
   }
 
-  var html = '<div class="section-title">📋 全部经期</div>';
+  var html = '<div class="section-title">📋 全部记录</div>';
   for (var j = 0; j < cycles.length; j++) {
     var c = cycles[j];
     var num = cycles.length - j;
     var stats = getCycleStats(c.id);
     var ongoing = !c.endDate;
-    var duration = c.endDate ? daysBetween(c.startDate, c.endDate) + '天' : '进行中';
+    var durationDays = c.endDate ? daysBetween(c.startDate, c.endDate) : 0;
     var badgeCls = ongoing ? 'cycle-badge ongoing' : 'cycle-badge';
     var badgeText = ongoing ? '进行中' : '已结束';
     var durationHtml = c.endDate
-      ? '<div class="cycle-duration"><span class="cycle-duration-num">' + daysBetween(c.startDate, c.endDate) + '</span><span class="cycle-duration-label">天经期</span></div>'
+      ? '<div class="cycle-duration"><span class="cycle-duration-num">' + durationDays + '</span><span class="cycle-duration-label">天经期</span></div>'
       : '';
     var reopenAction = '';
     if (c.endDate) {
       reopenAction = '<div style="margin-top:6px"><span style="font-size:12px;color:var(--primary);text-decoration:underline;cursor:pointer;display:inline-block;padding:2px 6px" onclick="event.stopPropagation();reopenAndGo(\'' + c.id + '\')">重新打开此周期</span></div>';
     }
     html += '<div class="cycle-card" onclick="nav(\'cycleDaily\',{cycleId:\'' + c.id + '\'})">' +
-      '<div class="cycle-card-header"><div class="cycle-num">第 ' + num + ' 个周期</div>' +
+      '<div class="cycle-card-header"><div class="cycle-num">第 ' + num + ' 次出血记录</div>' +
       '<div class="' + badgeCls + '">' + badgeText + '</div></div>' +
       '<div class="cycle-dates">' + formatDate(c.startDate) +
       (c.endDate ? ' ~ ' + formatDate(c.endDate) : ' ～') + '</div>' +
@@ -2482,7 +3237,7 @@ function renderBackup() {
     '<div style="font-size:13px;color:#666;line-height:1.6;margin-bottom:12px">清除所有数据，且不可撤销。建议先备份再清除。</div>' +
     '<button class="btn btn-danger" onclick="confirmClearAll()">清除所有数据</button></div>' +
 
-    '<div style="text-align:center;padding:16px 0 8px;color:#ccc;font-size:12px">经期记录 v1.2.1 · 数据仅保存在本机</div>';
+    '<div style="text-align:center;padding:16px 0 8px;color:#ccc;font-size:12px">经期记录 v1.6.3 · 数据仅保存在本机</div>';
 }
 
 function generateBackup() {
@@ -2585,26 +3340,215 @@ function importBackup() {
 }
 
 function exportToJSONFile() {
-  try {
-    var json = JSON.stringify(state.data, null, 2);
-    var blob = new Blob([json], {type: 'application/json;charset=utf-8'});
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement('a');
-    var date = new Date();
-    var y = date.getFullYear();
-    var m = String(date.getMonth() + 1);
-    if (m.length < 2) m = '0' + m;
-    var d = String(date.getDate());
-    if (d.length < 2) d = '0' + d;
-    a.href = url;
-    a.download = '经期记录备份_' + y + m + d + '.json';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
-    showToast('✓ 已导出，请在文件管理器/下载目录查找');
-  } catch (e) {
-    showToast('导出失败: ' + e.message);
+  var json = JSON.stringify(state.data, null, 2);
+  var date = new Date();
+  var y = date.getFullYear();
+  var m = String(date.getMonth() + 1);
+  if (m.length < 2) m = '0' + m;
+  var d = String(date.getDate());
+  if (d.length < 2) d = '0' + d;
+  var h = String(date.getHours());
+  if (h.length < 2) h = '0' + h;
+  var min = String(date.getMinutes());
+  if (min.length < 2) min = '0' + min;
+  var filename = '经期记录_' + y + '-' + m + '-' + d + '_' + h + '-' + min + '.json';
+
+  var isNative = (typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform && Capacitor.isNativePlatform());
+
+  if (isNative && Capacitor.Plugins.JsonExport) {
+    // Native: show options dialog (uses native JsonExport plugin)
+    showExportDialog(filename, json);
+  } else {
+    // Web: direct download
+    webDownloadJson(filename, json);
+  }
+
+  // ===== Export options bottom sheet =====
+  function showExportDialog(fname, fcontent) {
+    // Remove any existing dialog
+    var existing = document.getElementById('export-dialog-overlay');
+    if (existing) existing.remove();
+
+    var overlay = document.createElement('div');
+    overlay.id = 'export-dialog-overlay';
+    overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.45);z-index:99999;display:flex;align-items:flex-end;justify-content:center;transition:opacity 0.2s;';
+
+    var sheet = document.createElement('div');
+    sheet.style.cssText = 'background:#fff;width:100%;max-width:500px;border-radius:16px 16px 0 0;padding:24px 20px calc(24px + env(safe-area-inset-bottom));box-shadow:0 -4px 20px rgba(0,0,0,0.1);';
+
+    // Title
+    var title = document.createElement('div');
+    title.style.cssText = 'font-size:18px;font-weight:600;color:#333;text-align:center;margin-bottom:6px;';
+    title.textContent = '导出JSON文件';
+    sheet.appendChild(title);
+
+    var subtitle = document.createElement('div');
+    subtitle.style.cssText = 'font-size:13px;color:#999;text-align:center;margin-bottom:20px;word-break:break-all;';
+    subtitle.textContent = fname;
+    sheet.appendChild(subtitle);
+
+    // Option 1: Share via system share panel (WeChat, QQ, etc.)
+    var btnShare = document.createElement('button');
+    btnShare.style.cssText = 'width:100%;padding:15px;margin-bottom:12px;border:none;border-radius:12px;background:linear-gradient(135deg,#E8657A,#F0909E);color:#fff;font-size:16px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;';
+    btnShare.innerHTML = '<span>📤 分享给好友（微信/QQ等）</span>';
+    btnShare.onclick = function() {
+      overlay.remove();
+      Capacitor.Plugins.JsonExport.share({
+        filename: fname,
+        content: fcontent
+      }).then(function() {
+        showToast('已打开分享面板');
+      }).catch(function() {
+        webDownloadJson(fname, fcontent);
+      });
+    };
+    sheet.appendChild(btnShare);
+
+    // Option 2: Save to phone Downloads folder
+    var btnSave = document.createElement('button');
+    btnSave.style.cssText = 'width:100%;padding:15px;margin-bottom:12px;border:2px solid #E8657A;border-radius:12px;background:#fff;color:#E8657A;font-size:16px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;';
+    btnSave.innerHTML = '<span>💾 保存到手机</span>';
+    btnSave.onclick = function() {
+      overlay.remove();
+      showToast('正在打开文件管理器...');
+      Capacitor.Plugins.JsonExport.saveAs({
+        filename: fname,
+        content: fcontent
+      }).then(function(result) {
+        var path = (result && result.path) ? result.path : '';
+        if (path && path.indexOf('%2F') !== -1) {
+          path = decodeURIComponent(path.replace(/\+/g, ' '));
+        }
+        showToast('已保存到：' + path);
+      }).catch(function(err) {
+        var msg = (err && err.message) ? err.message : '';
+        if (msg.indexOf('canceled') !== -1) { return; }
+        showToast('保存失败: ' + msg);
+        webDownloadJson(fname, fcontent);
+      });
+    };
+    sheet.appendChild(btnSave);
+
+    // Cancel button
+    var btnCancel = document.createElement('button');
+    btnCancel.style.cssText = 'width:100%;padding:15px;border:none;border-radius:12px;background:#f5f5f5;color:#666;font-size:16px;cursor:pointer;';
+    btnCancel.textContent = '取消';
+    btnCancel.onclick = function() { overlay.remove(); };
+    sheet.appendChild(btnCancel);
+
+    overlay.appendChild(sheet);
+    overlay.addEventListener('click', function(e) {
+      if (e.target === overlay) overlay.remove();
+    });
+    document.body.appendChild(overlay);
+  }
+
+  // ===== Write JSON to cache then open share panel =====
+  function writeAndShare(fname, fcontent) {
+    try {
+      var Filesystem = Capacitor.Plugins.Filesystem;
+      var Share = Capacitor.Plugins.Share;
+      if (!Filesystem || !Filesystem.writeFile) {
+        fallbackShare(fname, fcontent);
+        return;
+      }
+      // 先把 JSON 写成文件，再通过 Share 把"文件"附上（这样微信/QQ 才能收到真正的数据）
+      Filesystem.writeFile({
+        path: 'period_export/' + fname,
+        data: fcontent,
+        directory: 'DOCUMENTS',
+        encoding: 'utf8',
+        recursive: true
+      }).then(function(res) {
+        var uri = res && res.uri ? res.uri : null;
+        if (Share && Share.share && uri) {
+          return Share.share({
+            title: fname,
+            text: '经期记录备份数据',
+            files: [uri]
+          }).then(function() {
+            showToast('已打开分享面板，可发送到微信/QQ');
+          }).catch(function(err) {
+            console.log('Share fallback:', err);
+            fallbackShare(fname, fcontent);
+          });
+        } else {
+          fallbackShare(fname, fcontent);
+        }
+      }).catch(function(err) {
+        console.log('Write for share failed:', err);
+        fallbackShare(fname, fcontent);
+      });
+    } catch(e) {
+      fallbackShare(fname, fcontent);
+    }
+  }
+
+  // ===== Fallback: copy JSON to clipboard + show toast =====
+  function fallbackShare(fname, fcontent) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(fcontent).then(function() {
+        showToast('✓ 数据已复制到剪贴板，请打开微信粘贴发送');
+      }).catch(function() {
+        showToast('分享失败，请重试');
+      });
+    } else {
+      showToast('当前环境不支持分享');
+    }
+  }
+
+  // ===== Save to phone via Filesystem plugin =====
+  function saveToFile(fname, fcontent) {
+    try {
+      var Filesystem = Capacitor.Plugins.Filesystem;
+      if (Filesystem && Filesystem.writeFile) {
+        // Try to write to external storage (Downloads-like location)
+        Filesystem.writeFile({
+          path: 'Download/' + fname,
+          data: fcontent,
+          directory: 'EXTERNAL_STORAGE',
+          encoding: 'utf8',
+          recursive: true
+        }).then(function(result) {
+          showToast('✓ 已保存到 Download/' + fname);
+        }).catch(function(err) {
+          // Fallback: try cache or documents directory
+          Filesystem.writeFile({
+            path: fname,
+            data: fcontent,
+            directory: 'DOCUMENTS',
+            encoding: 'utf8'
+          }).then(function() {
+            showToast('✓ 已保存到文档目录: ' + fname);
+          }).catch(function(err2) {
+            console.log('Filesystem save error:', err2);
+            showToast('保存失败: ' + (err2.message || '未知错误'));
+          });
+        });
+      } else {
+        showToast('文件系统插件不可用');
+      }
+    } catch(e) {
+      showToast('保存失败: ' + e.message);
+    }
+  }
+
+  // ===== Web download (browser fallback) =====
+  function webDownloadJson(fname, fcontent) {
+    try {
+      var blob = new Blob([fcontent], {type: 'application/json;charset=utf-8'});
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = fname;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+      showToast('已导出: ' + fname);
+    } catch (e) {
+      showToast('导出失败: ' + e.message);
+    }
   }
 }
 
@@ -2665,15 +3609,16 @@ function confirmClearAll() {
 /* ===== Modals ===== */
 function showStartCycleModal() {
   showModal({
-    title: '开始新周期',
-    body: '<div class="form-group" style="margin:0"><div class="form-label">来潮日期</div>' +
+    title: '记录出血',
+    body:
+      '<div class="form-group" style="margin:0"><div class="form-label">这次出血从哪天开始？</div>' +
       '<input type="text" class="form-input picker-input" name="startDate" id="modalStartDate" value="' + todayStr() + '" readonly onclick="showDatePicker({current:this.value,onConfirm:function(v){document.getElementById(\'modalStartDate\').value=v}})"></div>',
-    confirmText: '开始',
+    confirmText: '开始记录',
     onConfirm: function(vals) {
       if (!vals.startDate) { showToast('请选择日期'); return; }
       createCycle(vals.startDate);
       vibrate();
-      showToast('✓ 新周期已开始');
+      showToast('✓ 已开始记录');
       nav('home');
     }
   });
@@ -2775,7 +3720,12 @@ if (document.readyState === 'loading') {
 }
 
 /* ===== PWA Service Worker ===== */
-if ('serviceWorker' in navigator) {
+/* 原生 App（安卓 APK）里网页资源本来就打包在本地，不需要 Service Worker；
+   注册了反而会因 cache-first 在升级后继续显示旧界面，所以原生环境一律不注册。 */
+var IS_NATIVE_APP = (typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform && Capacitor.isNativePlatform());
+if (IS_NATIVE_APP) {
+  clearPwaCache();
+} else if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('service-worker.js').then(function(reg) {
     console.log('SW registered: ' + reg.scope);
   }).catch(function(err) {
