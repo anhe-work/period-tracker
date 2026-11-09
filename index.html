@@ -490,6 +490,7 @@ textarea.form-input{resize:none;min-height:72px;line-height:1.5}
   background:#fff;border-radius:20px;
   max-width:360px;width:100%;
   padding:24px 20px 20px;
+  max-height:88vh;overflow-y:auto;
 }
 .modal-title{font-size:18px;font-weight:600;margin-bottom:16px;text-align:center}
 .modal-body{margin-bottom:20px}
@@ -742,8 +743,9 @@ input[type="date"].picker-input,input[type="time"].picker-input{
   min-height:38px;
 }
 .calendar-cell.period-day{
-  background:var(--primary-light);
-  color:var(--primary-dark);font-weight:600;
+  background:#F6C2CD;
+  color:#9E2F4C;font-weight:700;
+  box-shadow:inset 0 0 0 1px rgba(232,101,122,.5);
 }
 .calendar-cell.predicted-day{
   background:repeating-linear-gradient(45deg, #FCEEF1 0px, #FCEEF1 3px, #FFF5F7 3px, #FFF5F7 7px);
@@ -762,40 +764,91 @@ input[type="date"].picker-input,input[type="time"].picker-input{
 }
 .calendar-cell.has-records{cursor:pointer}
 .calendar-cell.has-records:active{transform:scale(0.9)}
-.calendar-dot{
-  width:4px;height:4px;border-radius:50%;
-  background:var(--primary);margin-top:1px;
-}
+/* 图例：分组 + 左侧标签对齐，避免一长串居中文字绕成一团 */
 .calendar-legend{
-  display:flex;gap:14px;margin-top:12px;
-  font-size:12px;color:var(--text-secondary);
-  justify-content:center;flex-wrap:wrap;align-items:center;
+  margin-top:12px;padding:12px 14px 11px;
+  background:#F8F9FA;border:1px solid #EFF0F3;border-radius:14px;
 }
-.calendar-legend span{display:flex;align-items:center;gap:4px}
+.calendar-legend-group{display:flex;align-items:flex-start;gap:10px}
+.calendar-legend-group + .calendar-legend-group{margin-top:8px}
+.calendar-legend-label{
+  flex:0 0 46px;font-size:10.5px;font-weight:700;color:#AAB0BA;
+  line-height:17px;letter-spacing:.02em;white-space:nowrap;
+}
+.calendar-legend-items{
+  display:flex;flex-wrap:wrap;gap:5px 12px;
+  font-size:12px;color:var(--text-secondary);line-height:17px;
+}
+.calendar-legend-items > span{
+  display:inline-flex;align-items:center;gap:5px;white-space:nowrap;
+}
+/* 强制换行：让两行条目数均衡（3 + 3），不出现末行只剩一个 */
+.calendar-legend-break{flex:0 0 100%;height:0;margin:-2.5px 0}
 .calendar-legend-dot{
   display:inline-block;width:10px;height:10px;border-radius:3px;
+  flex:0 0 auto;position:relative;
 }
-.calendar-legend-dot.period{background:var(--primary-light);border:1px solid var(--primary)}
+.calendar-legend-dot.menstrual{background:#F6C2CD;border:1px solid #E8657A}
+.calendar-legend-dot.follicular{background:#E1EBF8;border:1px solid #5B8FD9}
+.calendar-legend-dot.luteal{background:#F8EAD3;border:1px solid #D9962E}
 .calendar-legend-dot.predicted{
   background:repeating-linear-gradient(45deg, #FCEEF1 0px, #FCEEF1 2px, #FFF5F7 2px, #FFF5F7 5px);
-  border:1px solid var(--primary);
+  border:1px solid #E8657A;
 }
+.calendar-legend-dot.fertile{background:#E3F3EB;border:1px solid #94CFB1}
+.calendar-legend-dot.ovulation{background:#2E9E6B;border:1px solid #1F7A4D}
+.calendar-legend-dot.late{background:#FDF1DE;border:1px solid #D9A34E}
+.calendar-legend-dot.spotting{background:#E9EAED;border:1px solid #B8BCC4}
+.calendar-legend-dot.log{border-radius:50%;background:#5B8FD9;border:1px solid #3A6BB0}
 .calendar-today-mark{
-  display:inline-block;width:14px;height:14px;
-  border-radius:50%;border:2px solid var(--primary);
+  display:inline-block;width:10px;height:10px;flex:0 0 auto;
+  border-radius:50%;border:1.5px solid var(--primary);
 }
+.calendar-legend-note{
+  margin-top:11px;padding-top:10px;border-top:1px dashed #ECEDF0;
+  font-size:11.5px;color:var(--text-tertiary);line-height:1.7;
+}
+.calendar-late-note{
+  margin-top:8px;padding:9px 11px;border-radius:10px;
+  background:#FFF9F1;color:#A8823F;font-size:11.5px;line-height:1.6;
+}
+.calendar-hint{
+  text-align:center;margin-top:9px;font-size:11.5px;
+  color:var(--text-tertiary);line-height:1.6;
+}
+.calendar-hint b{color:#C94B63;font-weight:600}
 
 /* ===== Phase backgrounds (menstrual & predicted handled separately) ===== */
-.calendar-cell.menstrual-day{background:#FCEEF1;color:#C94B63}
+/* 估算出来的月经期（不是真实记录）：用斜纹 + 虚线边框，和实心的「已记录」明确区分 */
+.calendar-cell.menstrual-day{
+  background:repeating-linear-gradient(45deg, #FCEEF1 0px, #FCEEF1 3px, #FFF5F7 3px, #FFF5F7 7px);
+  color:#C94B63;
+  box-shadow:inset 0 0 0 1px rgba(232,101,122,.45);
+}
 .calendar-cell.follicular-day{background:#EAF1FB;color:#3A6BB0}
-.calendar-cell.ovulation-day{background:#E7F5EE;color:#1F7A4D}
 .calendar-cell.luteal-day{background:#FBF1E0;color:#B9792B}
+/* 排卵期窗口：底色改用浅绿（不再是卵泡期的蓝）；排卵日（末天）再深一档 */
+.calendar-cell.fertile-day{background:#E3F3EB;color:#1F7A4D}
+.calendar-cell.fertile-day.ovulation-day{background:#CDEBDA}
+/* 推迟期间：过了预计来潮日、到今天仍未记录——浅橙底，只表示"在等这次来潮"，不给阶段名 */
+.calendar-cell.late-day{background:#FFFBF4;color:#B08A5A;box-shadow:inset 0 0 0 1px rgba(217,150,46,.18)}
+/* 排卵期是叠加在阶段模型之上的窗口：有自己的浅绿底，格子里用「易孕」浅绿胶囊；最后一天是排卵日，底色更深 + 实心绿「排卵」徽标 */
 .calendar-cell.menstrual-day.today .calendar-day-num,
 .calendar-cell.follicular-day.today .calendar-day-num,
-.calendar-cell.ovulation-day.today .calendar-day-num,
-.calendar-cell.luteal-day.today .calendar-day-num{border-color:currentColor}
-.calendar-phase-tag{font-size:10px;line-height:1;margin-top:1px;font-weight:700}
-.calendar-legend-dot.spotting{background:#F2F3F5;border:1px solid #B8BCC4}
+.calendar-cell.luteal-day.today .calendar-day-num,
+.calendar-cell.fertile-day.today .calendar-day-num{border-color:currentColor}
+.calendar-phase-tag{font-size:10px;line-height:1;margin-top:2px;font-weight:700}
+.calendar-phase-tag.fertile,
+.calendar-phase-tag.ovulation,
+.calendar-phase-tag.real-period,
+.calendar-phase-tag.pred-period{
+  font-size:9.5px;letter-spacing:.02em;
+  padding:2px 5px;border-radius:5px;margin-top:3px;
+}
+.calendar-phase-tag.fertile{background:#DCF0E4;color:#15724A}
+.calendar-phase-tag.ovulation{background:#2E9E6B;color:#fff}
+.calendar-phase-tag.real-period{background:#CC4059;color:#fff}
+.calendar-phase-tag.pred-period{background:#FCEEF1;color:#C94B63;box-shadow:inset 0 0 0 1px #E8AEB8}
 .calendar-cell.spotting-day{background:#F2F3F5;color:#8A8F99}
 .calendar-spot-tag{font-size:10px;line-height:1;margin-top:1px;font-weight:700;color:#8A8F99}
 /* 仅有症状/白带记录的日期：右上角小蓝点 */
@@ -804,13 +857,19 @@ input[type="date"].picker-input,input[type="time"].picker-input{
   width:5px;height:5px;border-radius:50%;
   background:#5B8FD9;
 }
-.calendar-legend-dot.log{background:#5B8FD9;border:1px solid #3A6BB0}
 .phase-banner{
   background:linear-gradient(135deg,#FFF7E8 0%,#FFF0F5 100%);
   border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:12px;
   text-align:center;font-size:14px;color:var(--text-secondary);box-shadow:var(--shadow);
 }
 .phase-banner strong{color:var(--primary-dark);font-weight:700}
+/* 推迟：暖橙，比粉色更"提醒"但不吓人 */
+.phase-banner.late{background:linear-gradient(135deg,#FFF4E8 0%,#FFEBD9 100%)}
+.phase-banner.late strong{color:#B9792B}
+.phase-banner.late .phase-banner-sub{font-size:12px;color:#9A7346;margin-top:4px;line-height:1.5}
+/* 预计（只是推算，不是记录）：灰底，不给它"事实"的语气 */
+.phase-banner.estimated{background:#F6F7F9;box-shadow:none}
+.phase-banner.estimated strong{color:#5A6270}
 
 /* ===== 出血记录：自动合并短间隔（排卵期出血/点滴）由算法处理，不区分类型 ===== */
 
@@ -985,7 +1044,7 @@ window.addEventListener('error', function(e) {
 });
 
 /* ===== State ===== */
-var APP_VERSION = '1.6.6';
+var APP_VERSION = '1.6.7';
 
 /* JS-level cache busting: if version changed, force reload */
 (function() {
@@ -1039,6 +1098,7 @@ var state = {
   editingSymptoms: false,
   editingProducts: false,
   justAddedProduct: null,
+  editingCycleDatesId: null,
   calendarYear: 0,
   calendarMonth: 0
 };
@@ -1073,6 +1133,8 @@ function loadData() {
   ensureDailyLogs();
 }
 function saveData() {
+  _lastRealEndCache = undefined; // 周期数据变了，最后一次真实经期结束日的缓存作废
+  _periodDatesCache = undefined; // 真实经期日期集合同步作废
   if (!LOCALSTORAGE_AVAILABLE) {
     showToast('存储不可用，数据无法保存');
     return;
@@ -1549,6 +1611,12 @@ function showModal(opts) {
   m.innerHTML = html;
   document.getElementById('modalOverlay').className = 'modal-overlay show';
   document.getElementById('modalConfirmBtn').onclick = function() {
+    // validateBeforeClose：校验不通过时保持弹窗打开，让用户接着改（编辑类弹窗需要）
+    if (opts.validateBeforeClose) {
+      var ok = false;
+      try { ok = opts.validateBeforeClose(getModalInputValues()); } catch (e) { ok = false; }
+      if (!ok) return;
+    }
     hideModal();
     if (opts.onConfirm) opts.onConfirm(getModalInputValues());
   };
@@ -1872,7 +1940,7 @@ function classifyCycles() {
   var result = {};
   // 候选：进行中 或 时长达到月经下限的出血
   var candidates = all.filter(function(c) {
-    var dur = c.endDate ? (daysBetween(c.startDate, c.endDate) + 1) : 0;
+    var dur = c.endDate ? daysBetween(c.startDate, c.endDate) : 0;
     return !c.endDate || dur >= MIN_PERIOD_DAYS;
   });
   // 数据太少：全部当月经，保证预测始终可用
@@ -1927,11 +1995,11 @@ function getRealPeriods() {
   var merged = [];
   for (var j = 0; j < periods.length; j++) {
     var c = periods[j];
-    var p = { start: c.startDate, end: c.endDate, dur: c.endDate ? (daysBetween(c.startDate, c.endDate) + 1) : 1 };
+    var p = { start: c.startDate, end: c.endDate, dur: c.endDate ? daysBetween(c.startDate, c.endDate) : 1 };
     if (merged.length && daysBetween(merged[merged.length - 1].start, p.start) <= MERGE_GAP) {
       var prev = merged[merged.length - 1];
       if (p.end && (!prev.end || p.end > prev.end)) prev.end = p.end;
-      prev.dur = prev.end ? (daysBetween(prev.start, prev.end) + 1) : prev.dur;
+      prev.dur = prev.end ? daysBetween(prev.start, prev.end) : prev.dur;
     } else {
       merged.push(p);
     }
@@ -1943,37 +2011,76 @@ function predictNextPeriod() {
   var realPeriods = getRealPeriods();
   if (realPeriods.length === 0) return null;
 
-  // 平均周期长度（相邻真实经期开始日间隔）
+  // 平均周期长度（相邻真实经期开始日间隔；用纯差值，不含首尾）
   var cycleLengths = [];
   for (var i = 1; i < realPeriods.length; i++) {
-    cycleLengths.push(daysBetween(realPeriods[i - 1].start, realPeriods[i].start));
+    cycleLengths.push(dateDiffDays(realPeriods[i - 1].start, realPeriods[i].start));
   }
   if (cycleLengths.length === 0) cycleLengths.push(28);
-  var avgCycle = Math.round(cycleLengths.reduce(function(a, b) { return a + b; }, 0) / cycleLengths.length);
+  // 平均周期只看最近 6 个周期（与美柚、Clue 一致）：几个月前的旧周期不该拖累当前预测
+  var recentCycles = cycleLengths.slice(-6);
+  var avgCycle = Math.round(recentCycles.reduce(function(a, b) { return a + b; }, 0) / recentCycles.length);
 
-  // 平均经期长度
+  // 周期稳定性：最近 6 次周期长度的极差。>7 天视为波动大，改成给一个区间并降低置信度。
+  // 主用户是周期规律的人，所以降级要"证据充分"才触发：
+  // 至少 3 个间隔（4 次月经）才按波动处理；只记了 2~3 次月经时，一两次差几天属正常，
+  // 此时仍给具体日期（否则新用户一上手就看到"只能给个大概"）。
+  // 例外：一次就差 14 天以上，属于明显异常，样本少也降级。
+  var variation = 0, irregular = false, spread = 0;
+  if (recentCycles.length >= 2) {
+    variation = Math.max.apply(null, recentCycles) - Math.min.apply(null, recentCycles);
+    var enoughSamples = recentCycles.length >= 3;
+    if (variation > 7 && (enoughSamples || variation > 14)) {
+      irregular = true;
+      spread = Math.min(5, Math.max(1, Math.round(variation / 2)));
+    }
+  }
+
+  // 平均经期长度（同样只取最近 6 次）；无数据时用人群默认 5 天（美柚同为 5 天）
   var periodLengths = [];
   for (var k = 0; k < realPeriods.length; k++) {
     if (realPeriods[k].end) periodLengths.push(realPeriods[k].dur);
   }
-  var avgPeriod = periodLengths.length ? Math.round(periodLengths.reduce(function(a, b) { return a + b; }, 0) / periodLengths.length) : 3;
-  if (avgPeriod < 2) avgPeriod = 3;
+  var recentPeriods = periodLengths.slice(-6);
+  var avgPeriod = recentPeriods.length ? Math.round(recentPeriods.reduce(function(a, b) { return a + b; }, 0) / recentPeriods.length) : 5;
+  if (avgPeriod < 2) avgPeriod = 5;
 
   // 锚点：进行中的经期优先，否则最近一次真实经期
   var current = getCurrentCycle();
   var lastStart = current ? current.startDate : realPeriods[realPeriods.length - 1].start;
-  var nextStart = addDays(lastStart, avgCycle);
+  var expectedStart = addDays(lastStart, avgCycle);  // 按记录推算的来潮日（不滚动，用于判断是否推迟）
+  var nextStart = expectedStart;
+  // 推算出的下次经期若已过期（很久没记录、或开始日被改到更早），
+  // 向后滚动到下一个未来周期，避免出现"预计 11月2日"这种已经过去的日期
+  var roll = 0;
+  while (nextStart < todayStr() && roll < 60) { nextStart = addDays(nextStart, avgCycle); roll++; }
   var nextEnd = addDays(nextStart, avgPeriod - 1);
+  // 推迟：预计日已经过去、但这次来潮还没记录。
+  // 进行中的经期不算推迟（那是"这次还没点结束"，属于另一类提示）。
+  var lateDays = (!current && roll > 0) ? dateDiffDays(expectedStart, todayStr()) : 0;
 
   return {
     startDate: nextStart,
     endDate: nextEnd,
+    expectedStart: expectedStart,
+    lateDays: lateDays,
+    late: lateDays > 0,
     cycleLength: avgCycle,
-    periodLength: avgPeriod
+    periodLength: avgPeriod,
+    usedCycles: recentCycles.length,
+    usedPeriods: recentPeriods.length,
+    irregular: irregular,
+    variation: variation,
+    spread: spread,
+    windowStart: addDays(nextStart, -spread),
+    windowEnd: addDays(nextStart, spread)
   };
 }
 
+// 真实记录覆盖的所有日期（含首尾）。日历每格、阶段判定都要用，加缓存避免重复构建
+var _periodDatesCache;
 function getAllPeriodDates() {
+  if (_periodDatesCache) return _periodDatesCache;
   var classification = classifyCycles();
   var dates = {};
   for (var i = 0; i < state.data.cycles.length; i++) {
@@ -1987,7 +2094,22 @@ function getAllPeriodDates() {
       d.setDate(d.getDate() + 1);
     }
   }
+  _periodDatesCache = dates;
   return dates;
+}
+
+// 用户标过的最后一个结束日（含被判为异常出血的记录）。
+// 用于禁止"估算的经期"越过用户已经明确标过的结束日。
+var _lastRealEndCache;
+function _lastRealPeriodEnd() {
+  if (_lastRealEndCache !== undefined) return _lastRealEndCache;
+  var v = null;
+  for (var i = 0; i < state.data.cycles.length; i++) {
+    var e = state.data.cycles[i].endDate;
+    if (e && (!v || e > v)) v = e;
+  }
+  _lastRealEndCache = v;
+  return v;
 }
 
 // 异常出血（排卵期/不规则出血）日期，用于日历浅色标记，不计入预测
@@ -2029,12 +2151,15 @@ function findCycleIdForDate(date) {
   return '';
 }
 
-/* ===== Cycle Phase (月经期 / 卵泡期 / 排卵期 / 黄体期) ===== */
+/* ===== Cycle Phase：三个阶段（月经期 / 卵泡期 / 黄体期）+ 排卵期标记 =====
+   排卵期不是阶段，而是叠加在阶段之上的 6 天窗口（排卵前 5 天 + 排卵当天），
+   落在卵泡期末尾、止于排卵日。这样经期长短只影响卵泡/黄体的分界，不会切出碎片。 */
 var PHASES = {
   menstrual: {key:'menstrual', label:'月经期', short:'经期', desc:'子宫内膜脱落出血', color:'#E8657A', bg:'#FCEEF1', text:'#C94B63'},
   follicular:{key:'follicular', label:'卵泡期', short:'卵泡', desc:'卵泡发育成熟', color:'#5B8FD9', bg:'#EAF1FB', text:'#3A6BB0'},
-  ovulation: {key:'ovulation', label:'排卵期', short:'排卵', desc:'易受孕', color:'#2E9E6B', bg:'#E7F5EE', text:'#1F7A4D'},
-  luteal:    {key:'luteal', label:'黄体期', short:'黄体', desc:'黄体形成', color:'#D9962E', bg:'#FBF1E0', text:'#B9792B'}
+  luteal:    {key:'luteal', label:'黄体期', short:'黄体', desc:'黄体形成', color:'#D9962E', bg:'#FBF1E0', text:'#B9792B'},
+  // 仅用于「排卵期」标记与文案，不再作为独立阶段返回
+  ovulation: {key:'ovulation', label:'排卵期', short:'易孕', desc:'排卵前 5 天 + 排卵当天', color:'#2E9E6B', bg:'#E7F5EE', text:'#1F7A4D'}
 };
 
 // 0-based day difference between two 'YYYY-MM-DD' dates (today vs date => negative if date is before today)
@@ -2044,35 +2169,95 @@ function dateDiffDays(a, b) {
   return Math.round((e - s) / 86400000);
 }
 
-// Returns a phase object (from PHASES) for a given date, based on the predicted cycle.
-// Anchored on the predicted next period start, repeating every avgCycle days.
-// NOTE: this is an estimate for visualization, real cycles vary.
+// 周期内的第几天（0 基：0 = 周期第 1 天）
+function cycleDayOf(dateStr, prediction) {
+  var L = prediction.cycleLength;
+  if (!L || L < 14) L = 28;
+  var diff = dateDiffDays(prediction.startDate, dateStr);
+  return ((diff % L) + L) % L;
+}
+
+// 排卵日（0 基）。黄体期长度个体内很稳定（约 14 天），所以用「下次预计经期 − 14」倒推。
+// 周期变长 → 多出来的是卵泡期；经期是长是短，都不改变排卵日。
+function ovulationCycleDay(prediction) {
+  var L = prediction.cycleLength;
+  if (!L || L < 14) L = 28;
+  return L - 14;
+}
+
+// 排卵期 = 排卵前 5 天 + 排卵当天，共 6 天（Wilcox 等 1995 NEJM：受孕只发生在
+// 「以排卵日为最后一天的 6 天」内）。精子在生殖道可存活约 5 天，卵子排出后约 12~24 小时。
+// 这是一个「窗口」，横跨卵泡期末尾与黄体期开头，不是独立阶段。
+var FERTILE_DAYS_BEFORE_OV = 5;
+function isFertileDay(dateStr, prediction) {
+  if (!prediction) return false;
+  // 经期当天不标易孕：短周期（22~25 天）时窗口会和经期重叠，标上会自相矛盾
+  var ph = getPhaseForDate(dateStr, prediction);
+  if (!ph || ph.key === 'menstrual') return false;
+  var ov = ovulationCycleDay(prediction);
+  var cd = cycleDayOf(dateStr, prediction);
+  return cd >= ov - FERTILE_DAYS_BEFORE_OV && cd <= ov;
+}
+
+// 易孕窗口内的第几天（1~6），不在窗口内返回 0
+function fertileDayIndex(dateStr, prediction) {
+  if (!isFertileDay(dateStr, prediction)) return 0;
+  return cycleDayOf(dateStr, prediction) - (ovulationCycleDay(prediction) - FERTILE_DAYS_BEFORE_OV) + 1;
+}
+
+// 某天是不是推算出来的排卵日（易孕窗口的最后一天）
+function isOvulationDay(dateStr, prediction) {
+  if (!prediction) return false;
+  return cycleDayOf(dateStr, prediction) === ovulationCycleDay(prediction) && isFertileDay(dateStr, prediction);
+}
+
+// 日历点某天弹出的 sheet 头部用：这天处于什么阶段 / 是否易孕 / 是否排卵日
+// 判定和日历格子保持同一套（真实经期 / 推算经期 / 出血日不标；经期推迟后，预计日之后停用）
+function calendarDayCycleInfo(dateStr) {
+  var prediction = predictNextPeriod();
+  if (!prediction) return null;
+  if (getAllPeriodDates()[dateStr] || getPredictedDates(prediction)[dateStr] || getAllSpottingDates()[dateStr]) return null;
+  if (prediction.lateDays > 0 && dateStr >= prediction.expectedStart) return null;
+  var phase = getPhaseForDate(dateStr, prediction);
+  if (!phase) return null;
+  var fertile = isFertileDay(dateStr, prediction);
+  return {
+    phase: phase,
+    fertile: fertile,
+    ovulation: isOvulationDay(dateStr, prediction),
+    fertileIndex: fertile ? fertileDayIndex(dateStr, prediction) : 0
+  };
+}
+
+// 日期所属阶段：月经期(1~P) → 卵泡期(P+1~排卵日) → 黄体期(排卵日+1~周期末)
+// 三个阶段互斥且连续，加起来正好等于周期长度，不会出现 0~2 天的碎片。
 function getPhaseForDate(dateStr, prediction) {
   if (!prediction) return null;
+  // 真实记录优先：用户记录过的经期日子永远是月经期，不被平均经期长度改写
+  if (getAllPeriodDates()[dateStr]) return PHASES.menstrual;
   var L = prediction.cycleLength;
   var P = prediction.periodLength;
   if (L < 14) L = 28;
-  if (P < 1) P = 1;
-  if (P > L - 2) P = L - 2; // safety clamp
-  var base = prediction.startDate;             // predicted next period start
-  var diff = dateDiffDays(base, dateStr);      // 0 if same day as next period start
-  var cycleDay = ((diff % L) + L) % L;         // 0..L-1 (day-of-cycle)
-  var ovDay = L - 14;                          // ovulation ~14 days before next period
-  var fertileStart = ovDay - 5;                // fertile window (sperm can survive ~5 days)
-  var fertileEnd = ovDay + 1;                  // egg viable ~1 day
-  if (fertileStart < P) fertileStart = P;
-  if (fertileEnd < fertileStart) fertileEnd = fertileStart;
-  if (cycleDay >= 0 && cycleDay <= P - 1) return PHASES.menstrual;
-  if (cycleDay >= fertileStart && cycleDay <= fertileEnd) return PHASES.ovulation;
-  if (cycleDay >= P && cycleDay < fertileStart) return PHASES.follicular;
-  if (cycleDay > fertileEnd && cycleDay < L) return PHASES.luteal;
-  return null;
+  if (P < 1) P = 5;
+  var ov = L - 14;                 // 排卵日（0 基）
+  if (P > ov) P = Math.max(1, ov); // 经期长过排卵日：卵泡段归零，不撑爆整段
+  var cycleDay = cycleDayOf(dateStr, prediction);
+  if (cycleDay < P) {
+    // 用户已经把这次月经标了结束，紧接结束日的那几天就不该再按"估算经期"上色
+    // （平均经期偏长时，会把结束日之后的几天继续显示成「经期」，和真实记录打架）。
+    // 只钳制紧邻结束日的溢出（不足一个经期长度），不能把下个周期的「预计」也一起抹掉。
+    var lastEnd = _lastRealPeriodEnd();
+    if (lastEnd && dateStr > lastEnd && dateDiffDays(lastEnd, dateStr) < P) return PHASES.follicular;
+    return PHASES.menstrual;
+  }
+  if (cycleDay <= ov) return PHASES.follicular;
+  return PHASES.luteal;
 }
 
 // Today's phase label for home/calendar banner
+// 同上：今天是不是经期，只看真实记录的起止区间，避免旧记录没结束就永远显示经期
 function getTodayPhaseLabel(prediction) {
-  var cur = getCurrentCycle();
-  if (cur) return PHASES.menstrual.label;
+  if (getAllPeriodDates()[todayStr()]) return PHASES.menstrual.label;
   if (!prediction) return '';
   var ph = getPhaseForDate(todayStr(), prediction);
   return ph ? ph.label : '';
@@ -2089,25 +2274,52 @@ function getDaysToNextPeriod(prediction) {
 function buildCountdownCard(prediction) {
   if (!prediction) return '';
   var d = getDaysToNextPeriod(prediction);
+  var todayS = todayStr();
+  var recToday = !!getAllPeriodDates()[todayS];        // 今天是不是"记录过"的经期
+  var predToday = !!getPredictedDates(prediction)[todayS]; // 今天是不是"推算"的经期
+  var late = prediction.lateDays > 0;
   var phaseLabel = getTodayPhaseLabel(prediction);
-  var countdownText, countdownSub;
-  if (d === 0) {
-    countdownText = '今天来潮';
-    countdownSub = '预计 ' + formatDateFull(prediction.startDate);
+  var fIdx = fertileDayIndex(todayS, prediction);
+  var fertileHtml = '';
+  if (isOvulationDay(todayS, prediction)) fertileHtml = ' · <span style="font-weight:600;color:#1F7A4D">今天约是排卵日</span>';
+  else if (fIdx) fertileHtml = ' · <span style="font-weight:600;color:#1F7A4D">排卵期第 ' + fIdx + ' 天</span>';
+  var irr = !!prediction.irregular;
+  var rangeText = irr
+    ? (formatDate(prediction.windowStart) + ' ~ ' + formatDate(prediction.windowEnd))
+    : formatDateFull(prediction.startDate);
+  var countdownText, countdownSub, mainColor = 'var(--primary)';
+  if (late) {
+    // 推迟时说清事实，而不是把预测顺着滚到下个月、装作一切正常
+    countdownText = prediction.lateDays > 60 ? '很久没有记录' : '已推迟 ' + prediction.lateDays + ' 天';
+    countdownSub = prediction.lateDays > 60
+      ? '记录一次来潮后会自动重新推算'
+      : '预计 ' + formatDate(prediction.expectedStart) + ' 来潮 · 来了就在日历点「月经开始」';
+    mainColor = '#B9792B';
+  } else if (d === 0) {
+    countdownText = recToday ? '今天来潮' : (irr ? '就在这几天' : '预计今天来潮');
+    countdownSub = '预计 ' + rangeText;
   } else if (d > 0) {
-    countdownText = '还有 ' + d + ' 天';
-    countdownSub = '预计 ' + formatDateFull(prediction.startDate) + ' 来潮';
+    countdownText = (irr ? '约 ' : '还有 ') + d + ' 天';
+    countdownSub = '预计 ' + rangeText + (irr ? '' : ' 来潮');
   } else {
     countdownText = '预计 ' + formatDate(prediction.startDate);
     countdownSub = '下次经期';
   }
-  var phaseHtml = phaseLabel
-    ? '<div style="text-align:center;margin-top:12px;font-size:13px;color:var(--text-secondary)">现在处于 <span style="font-weight:600;color:var(--primary-dark)">' + phaseLabel + '</span></div>'
-    : '';
+  if (irr && !late) countdownSub += ' · 日期可能前后浮动';
+  // 阶段行：只有"记录过"才敢说「现在处于」；只是推算就说「预计」
+  var phaseHtml = '';
+  if (!late && phaseLabel && !(predToday && d === 0)) {
+    if (phaseLabel === PHASES.menstrual.label && !recToday) {
+      phaseHtml = '<div style="text-align:center;margin-top:12px;font-size:13px;color:var(--text-secondary)">按周期推算 · <span style="font-weight:600;color:#5A6270">预计经期</span>' +
+        (predToday ? '，还没记录' : '') + '</div>';
+    } else {
+      phaseHtml = '<div style="text-align:center;margin-top:12px;font-size:13px;color:var(--text-secondary)">现在处于 <span style="font-weight:600;color:var(--primary-dark)">' + phaseLabel + '</span>' + fertileHtml + '</div>';
+    }
+  }
   return '<div class="predict-card" style="cursor:pointer" onclick="nav(\'calendar\')">' +
     '<div class="predict-title">🔮 下次经期倒计时</div>' +
     '<div style="text-align:center">' +
-    '<div style="font-size:30px;font-weight:700;color:var(--primary);line-height:1.1">' + countdownText + '</div>' +
+    '<div style="font-size:30px;font-weight:700;color:' + mainColor + ';line-height:1.1">' + countdownText + '</div>' +
     '<div style="font-size:13px;color:var(--text-secondary);margin-top:6px">' + countdownSub + '</div>' +
     '</div>' + phaseHtml +
     '<div class="predict-stats" style="margin-top:14px">' +
@@ -2133,6 +2345,235 @@ function changeCalendarMonth(delta) {
   renderCalendar();
 }
 
+/* ===== 日历上直接标记「月经开始 / 月经结束」 ===== */
+function _cyclesDeepCopy() {
+  try { return JSON.parse(JSON.stringify(state.data.cycles)); } catch (e) { return null; }
+}
+
+function _restoreCyclesSnapshot(snap) {
+  if (!snap) return;
+  state.data.cycles = snap;
+  saveData();
+  vibrate();
+  showToast('已撤销');
+  navigateTo(state.currentPage, state.pageParams);
+}
+
+function _cycleStartingAt(date) {
+  for (var i = 0; i < state.data.cycles.length; i++) {
+    if (state.data.cycles[i].startDate === date) return state.data.cycles[i];
+  }
+  return null;
+}
+
+function _cycleContaining(date) {
+  var hit = null;
+  for (var i = 0; i < state.data.cycles.length; i++) {
+    var c = state.data.cycles[i];
+    if (date >= c.startDate && date <= (c.endDate || '9999-12-31')) {
+      if (!hit || c.startDate > hit.startDate) hit = c;
+    }
+  }
+  return hit;
+}
+
+function _lastCycleOnOrBefore(date) {
+  var hit = null;
+  for (var i = 0; i < state.data.cycles.length; i++) {
+    var c = state.data.cycles[i];
+    if (c.startDate <= date && (!hit || c.startDate > hit.startDate)) hit = c;
+  }
+  return hit;
+}
+
+/* 包含这天的记录里，开始最早的那一条（有重叠数据时用它代表「本次月经」） */
+function _earliestCycleContaining(date) {
+  var hit = null;
+  for (var i = 0; i < state.data.cycles.length; i++) {
+    var c = state.data.cycles[i];
+    if (date >= c.startDate && date <= (c.endDate || '9999-12-31')) {
+      if (!hit || c.startDate < hit.startDate) hit = c;
+    }
+  }
+  return hit;
+}
+
+function _cycleStartingBetween(afterDate, untilDate) {
+  var hit = null;
+  for (var i = 0; i < state.data.cycles.length; i++) {
+    var c = state.data.cycles[i];
+    if (c.startDate > afterDate && c.startDate <= untilDate) {
+      if (!hit || c.startDate < hit.startDate) hit = c;
+    }
+  }
+  return hit;
+}
+
+/* 历史平均经期长度（含首尾计算，3~10 天夹紧），用于「上一期忘了结束」时合理收口 */
+function _avgPeriodLen() {
+  var sum = 0, n = 0;
+  for (var i = 0; i < state.data.cycles.length; i++) {
+    var c = state.data.cycles[i];
+    if (!c.endDate) continue;
+    var d = daysBetween(c.startDate, c.endDate);
+    if (d < 1 || d > 15) continue;
+    sum += d;
+    n++;
+  }
+  var avg = n ? Math.round(sum / n) : 5;
+  if (avg < 3) avg = 3;
+  if (avg > 10) avg = 10;
+  return avg;
+}
+
+/* 点日历某天 → 动作面板：月经开始 / 月经结束 / 看这天的记录 */
+function openCalendarDaySheet(date) {
+  var startCycle = _cycleStartingAt(date);
+  var target = _earliestCycleContaining(date) || _lastCycleOnOrBefore(date);
+
+  var startHint = '把这一天记为本次月经开始（结束那天再点「月经结束」）';
+  if (startCycle) startHint = '这天已经是月经开始了';
+  var endHint = '把这一天记为本次月经的最后一天';
+  var endDisabled = false;
+  if (!target) {
+    var nxt = _cycleStartingBetween(date, '9999-12-31');
+    if (nxt) endHint = '这天早于已记的开始日（' + formatDate(nxt.startDate) + '）· 会按平均经期把开始日一并前移';
+    else { endHint = '这天之前还没有月经开始的记录'; endDisabled = true; }
+  }
+  else if (target.endDate === date) { endHint = '本次已经是这天结束了'; endDisabled = true; }
+  else {
+    var mid = _cycleStartingBetween(target.startDate, date);
+    // 中间夹着别的记录也允许点：会把它们合并进这一期（记录不丢）
+    if (mid) endHint = '会把 ' + formatDate(mid.startDate) + ' 那条记录合并进来';
+    else if (target.endDate && target.endDate > date) endHint = '结束日将从 ' + formatDate(target.endDate) + ' 提前到这天';
+    else if (target.endDate && target.endDate < date) endHint = '结束日将从 ' + formatDate(target.endDate) + ' 延后到这天';
+  }
+
+  function row(icon, title, sub, onclick, disabled) {
+    return '<div' + (disabled ? '' : ' onclick="' + onclick + '"') +
+      ' style="display:flex;align-items:center;gap:12px;padding:14px 4px;border-bottom:1px solid #f3f3f3;' +
+      (disabled ? 'opacity:0.38;' : 'cursor:pointer;') + '">' +
+      '<span style="font-size:20px;width:26px;text-align:center;flex:0 0 auto">' + icon + '</span>' +
+      '<div style="flex:1"><div style="font-size:15px;color:#333;font-weight:500">' + title + '</div>' +
+      '<div style="font-size:12px;color:#999;margin-top:2px">' + sub + '</div></div>' +
+      (!disabled ? '<span style="color:#ccc;font-size:16px;flex:0 0 auto">›</span>' : '') + '</div>';
+  }
+
+  var cyc = _cycleContaining(date);
+  var openDay = cyc ? ('nav(\'dayDetail\',{cycleId:\'' + cyc.id + '\',date:\'' + date + '\'})')
+                    : ('nav(\'symptoms\',{date:\'' + date + '\'})');
+
+  var ci = calendarDayCycleInfo(date);
+  var cycleLine = '';
+  if (ci) {
+    if (ci.ovulation) cycleLine = ' · <span style="color:#1F7A4D;font-weight:600">预计排卵日</span>';
+    else if (ci.fertile) cycleLine = ' · <span style="color:#1F7A4D">排卵期第 ' + ci.fertileIndex + ' 天</span>';
+  }
+
+  var body =
+    '<div style="text-align:center;font-size:13px;color:var(--text-secondary);margin:-6px 0 10px">' +
+      formatDateFull(date) + ' · ' + getWeekday(date) + (isToday(date) ? ' · 今天' : '') + cycleLine + '</div>' +
+    row('🩸', '月经开始', startHint, 'calendarMarkStart(\'' + date + '\')', !!startCycle) +
+    row('🏁', '月经结束', endHint, 'calendarMarkEnd(\'' + date + '\')', endDisabled) +
+    row('📋', '看这天的记录', '更换记录、症状、白带', openDay, false);
+
+  showModal({ title: '这一天要记什么？', body: body, confirmText: '关闭', cancelText: null, onConfirm: function() {} });
+}
+
+/* 「月经开始」：新建一期，或把已在这一期里的开始日挪过来 */
+function calendarMarkStart(date) {
+  hideModal();
+  if (_cycleStartingAt(date)) { showToast('这一天已经是月经开始了'); return; }
+  var snap = _cyclesDeepCopy();
+  var contain = _cycleContaining(date);
+  var msg = '';
+  if (contain && date > contain.startDate) {
+    var gap = daysBetween(contain.startDate, date);
+    if (!contain.endDate && gap > 10) {
+      // 上一期忘了点「月经结束」→ 按历史平均经期长度收口，再另起一期
+      var closeAt = addDays(contain.startDate, _avgPeriodLen() - 1);
+      var maxEnd = dayBefore(date);
+      if (closeAt > maxEnd) closeAt = maxEnd;
+      contain.endDate = closeAt;
+      state.data.cycles.push({id: genId(), startDate: date, endDate: null, changes: [], symptoms: {}});
+      msg = '✓ 上一期结束于 ' + formatDate(contain.endDate) + '，' + formatDate(date) + ' 开始新的一期';
+    } else {
+      var prev = trimPreviousCycle(contain.id, date);
+      contain.startDate = date;
+      if (contain.endDate && contain.endDate < date) contain.endDate = date;
+      msg = '✓ 本次改为 ' + formatDate(date) + ' 开始';
+      if (prev) msg += '，上一条结束日改为 ' + formatDate(prev.endDate);
+    }
+  } else {
+    var later = _cycleStartingBetween(date, '9999-12-31');
+    if (later && daysBetween(date, later.startDate) <= 10) {
+      // 这天就在下一条记录开始前不久 → 是开始日记错了，把那条的开始日提前到这天
+      var prev2 = trimPreviousCycle(later.id, date);
+      later.startDate = date;
+      if (later.endDate && later.endDate < date) later.endDate = date;
+      msg = '✓ 本次改为 ' + formatDate(date) + ' 开始';
+      if (prev2) msg += '，上一条结束日改为 ' + formatDate(prev2.endDate);
+    } else if (later) {
+      showToast('后面还有 ' + formatDate(later.startDate) + ' 开始的记录，先把那一条改掉');
+      return;
+    } else {
+      state.data.cycles.push({id: genId(), startDate: date, endDate: null, changes: [], symptoms: {}});
+      msg = '✓ ' + formatDate(date) + ' 记为月经开始';
+    }
+  }
+  saveData();
+  vibrate();
+  navigateTo(state.currentPage, state.pageParams);
+  showUndoToast(msg, '撤销', function() { _restoreCyclesSnapshot(snap); });
+}
+
+/* 「月经结束」：把本次月经的结束日设为这天（可提前、可延后、可改错） */
+function calendarMarkEnd(date) {
+  hideModal();
+  var snap = _cyclesDeepCopy();
+  var target = _earliestCycleContaining(date) || _lastCycleOnOrBefore(date);
+  if (!target) {
+    // 这天早于所有记录的开始日 → 多半是开始日记晚了：把后面那条的开始日一并前移
+    target = _cycleStartingBetween(date, '9999-12-31');
+    if (!target) { showToast('这天之前还没有月经开始的记录，先点「月经开始」'); return; }
+  }
+  if (target.endDate === date) { showToast('本次已经是这天结束了'); return; }
+  var shifted = false;
+  if (target.startDate > date) {
+    // 结束日早于开始日，说明开始日记错了：按历史平均经期把开始日前移
+    var newStart = addDays(date, -(_avgPeriodLen() - 1));
+    trimPreviousCycle(target.id, newStart);
+    target.startDate = newStart;
+    shifted = true;
+  }
+  var targetId = target.id;
+  // 把这段里其它重叠/夹在中间的记录并进这一期：更换记录不丢，只合并时间范围
+  var absorbed = [];
+  for (var i = state.data.cycles.length - 1; i >= 0; i--) {
+    var c = state.data.cycles[i];
+    if (c.id === targetId) continue;
+    if (c.startDate > target.startDate && c.startDate <= date) {
+      absorbed.push(c);
+      state.data.cycles.splice(i, 1);
+    }
+  }
+  target.changes = target.changes || [];
+  for (var j = 0; j < absorbed.length; j++) {
+    var chs = absorbed[j].changes || [];
+    for (var k = 0; k < chs.length; k++) target.changes.push(chs[k]);
+  }
+  target.endDate = date;
+  saveData();
+  vibrate();
+  var n = daysBetween(target.startDate, date);
+  var msg = '✓ 本次 ' + formatDate(target.startDate) + ' ~ ' + formatDate(date) + ' · 共 ' + n + ' 天';
+  if (shifted) msg = '✓ 开始日也一并改到 ' + formatDate(target.startDate) + '，本次 ' + formatDate(target.startDate) + ' ~ ' + formatDate(date) + ' · 共 ' + n + ' 天';
+  if (absorbed.length) msg += '（已合并 ' + absorbed.length + ' 条重叠记录）';
+  if (n < 3) msg += '（不足 3 天按异常出血处理）';
+  navigateTo(state.currentPage, state.pageParams);
+  showUndoToast(msg, '撤销', function() { _restoreCyclesSnapshot(snap); });
+}
+
 function renderCalendar() {
   var el = document.getElementById('page-calendar');
   if (!el) return;
@@ -2146,6 +2587,12 @@ function renderCalendar() {
   var prediction = predictNextPeriod();
   var predictedDates = getPredictedDates(prediction);
   var today = todayStr();
+  // 经期推迟时：不再画"预计经期"斜纹（下次来潮日其实无从推算）。
+  // 预计日之后的阶段也停掉——那时再按日历法算，会得出"11/6~11/10 预计经期"
+  // 这种已经过去、又和"已推迟"自相矛盾的结果。
+  var lateDays = prediction ? prediction.lateDays : 0;
+  var phaseCutoff = lateDays > 0 ? prediction.expectedStart : null;
+  if (lateDays > 0) predictedDates = {};
 
   var daysInMonth = getDaysInMonth(year, month);
   var firstDay = getFirstDayOfMonth(year, month);
@@ -2156,20 +2603,42 @@ function renderCalendar() {
     var pStart = prediction.startDate;
     var cycleCount = getRealPeriods().length;
     var confidence = cycleCount >= 3 ? '较准确' : '初步估算';
+    if (prediction.irregular) confidence = '仅供参考';
+    var lateNow = prediction.lateDays > 0;
+    var dateLabel = lateNow ? '这次来潮' : '预计下次来潮';
+    var dateLine = formatDateFull(pStart);
+    var dateSize = '22px';
+    var dateColor = 'var(--primary)';
+    var subLine = '持续约 ' + prediction.periodLength + ' 天';
+    if (lateNow) {
+      // 推迟时不装作还能算准：把"已推迟几天"摆到主位置
+      dateLine = prediction.lateDays > 60 ? '很久没有记录' : '已推迟 ' + prediction.lateDays + ' 天';
+      dateColor = '#B9792B';
+      subLine = prediction.lateDays > 60
+        ? '记录一次来潮后会自动重新推算'
+        : '预计 ' + formatDate(prediction.expectedStart) + ' 来潮 · 来了就在日历点「月经开始」';
+    } else if (prediction.irregular) {
+      dateLine = formatDate(prediction.windowStart) + ' ~ ' + formatDate(prediction.windowEnd);
+      dateSize = '19px';
+      subLine = '最近几次周期相差 ' + prediction.variation + ' 天，日期可能前后浮动';
+    }
+    var statsHtml = '<div class="predict-stat"><div class="predict-num">' + prediction.cycleLength + '</div><div class="predict-label">天（平均周期）</div></div>' +
+      '<div class="predict-divider"></div>' +
+      '<div class="predict-stat"><div class="predict-num">' + prediction.periodLength + '</div><div class="predict-label">天（平均经期）</div></div>';
+    if (!lateNow) {
+      statsHtml += '<div class="predict-divider"></div>' +
+        '<div class="predict-stat"><div class="predict-num">' + dateDiffDays(today, pStart) + '</div><div class="predict-label">天后到下次</div></div>';
+    }
     html += '<div class="predict-card">' +
-      '<div class="predict-title">🔮 经期预测 · <span style="font-size:12px;color:var(--text-secondary);font-weight:400">' + confidence + '（基于' + cycleCount + '个周期）</span></div>' +
+      '<div class="predict-title">🔮 经期预测 · <span style="font-size:12px;color:var(--text-secondary);font-weight:400">' + confidence + '（最近 ' + (prediction.usedCycles || cycleCount) + ' 个周期）</span></div>' +
       '<div style="display:flex;flex-direction:column;gap:0;margin-bottom:12px">' +
-      '<div style="text-align:center;font-size:14px;color:var(--text-secondary)">预计下次来潮</div>' +
-      '<div style="text-align:center;font-size:22px;font-weight:700;color:var(--primary)">' + formatDateFull(pStart) + '</div>' +
-      '<div style="text-align:center;font-size:13px;color:var(--text-secondary)">持续约 ' + prediction.periodLength + ' 天</div>' +
+      '<div style="text-align:center;font-size:14px;color:var(--text-secondary)">' + dateLabel + '</div>' +
+      '<div style="text-align:center;font-size:' + dateSize + ';font-weight:700;color:' + dateColor + ';line-height:1.3">' + dateLine + '</div>' +
+      '<div style="text-align:center;font-size:13px;color:var(--text-secondary);padding:0 8px;line-height:1.4">' + subLine + '</div>' +
       '</div>' +
-      '<div class="predict-stats">' +
-      '<div class="predict-stat"><div class="predict-num">' + prediction.cycleLength + '</div><div class="predict-label">天（平均周期）</div></div>' +
-      '<div class="predict-divider"></div>' +
-      '<div class="predict-stat"><div class="predict-num">' + prediction.periodLength + '</div><div class="predict-label">天（平均经期）</div></div>' +
-      '<div class="predict-divider"></div>' +
-      '<div class="predict-stat"><div class="predict-num">' + daysBetween(today, pStart) + '</div><div class="predict-label">天后到下次</div></div>' +
-      '</div></div>';
+      '<div class="predict-stats">' + statsHtml + '</div>' +
+      '<div style="margin-top:10px;font-size:11px;color:var(--text-tertiary);text-align:center;line-height:1.5">按最近 ' + (prediction.usedCycles || cycleCount) + ' 个周期的平均值得出 · 日历法估算，不能作为避孕依据</div>' +
+      '</div>';
   } else {
     html += '<div class="predict-card">' +
       '<div class="predict-title">🔮 经期预测</div>' +
@@ -2178,20 +2647,30 @@ function renderCalendar() {
   }
 
   // 今日所处阶段 banner（按阶段给白话提示）
-  var todaysPhaseObj = null;
-  if (getCurrentCycle()) todaysPhaseObj = PHASES.menstrual;
-  else if (prediction) todaysPhaseObj = getPhaseForDate(todayStr(), prediction);
+  // 「今天在经期」只认真实记录的起止区间；只是推算出来的日子，措辞必须写成"预计"
   var dtn = getDaysToNextPeriod(prediction);
-  if (todaysPhaseObj) {
-    var bannerSub = '';
-    if (todaysPhaseObj.key === 'ovulation') bannerSub = ' · 易受孕窗口';
-    else if (todaysPhaseObj.key === 'follicular') bannerSub = ' · 经期刚结束';
-    else if (todaysPhaseObj.key === 'menstrual') bannerSub = ' · 正在经期';
-    else if (todaysPhaseObj.key === 'luteal') {
-      if (dtn !== null && dtn > 0) bannerSub = ' · 距下次经期还有 ' + dtn + ' 天';
-      else if (dtn === 0) bannerSub = ' · 今天预计来潮';
+  if (periodDates[today]) {
+    html += '<div class="phase-banner">今天：<strong>月经期</strong> · 正在经期</div>';
+  } else if (lateDays > 0) {
+    html += '<div class="phase-banner late">经期已推迟 <strong>' + (lateDays > 60 ? '很久没有记录' : lateDays + ' 天') + '</strong>' +
+      '<div class="phase-banner-sub">预计 ' + formatDate(prediction.expectedStart) + ' 来潮 · 来了就在日历点「月经开始」，记录后自动重新推算</div></div>';
+  } else if (prediction && predictedDates[today]) {
+    html += '<div class="phase-banner estimated">今天：<strong>预计经期</strong> · ' +
+      (dtn === 0 ? '今天可能来潮' : '按周期推算') + '，还没记录</div>';
+  } else {
+    var todaysPhaseObj = prediction ? getPhaseForDate(todayStr(), prediction) : null;
+    if (todaysPhaseObj) {
+      var bannerSub = '';
+      var todayFertile = prediction ? isFertileDay(todayStr(), prediction) : false;
+      if (todayFertile && isOvulationDay(todayStr(), prediction)) bannerSub = ' · 今天约是排卵日';
+      else if (todayFertile) bannerSub = ' · 排卵期第 ' + fertileDayIndex(todayStr(), prediction) + ' 天';
+      else if (todaysPhaseObj.key === 'follicular') bannerSub = ' · 经期已结束';
+      else if (todaysPhaseObj.key === 'luteal') {
+        if (dtn !== null && dtn > 0) bannerSub = ' · 距下次经期还有 ' + dtn + ' 天';
+        else if (dtn === 0) bannerSub = ' · 今天预计来潮';
+      }
+      html += '<div class="phase-banner">今天：<strong>' + todaysPhaseObj.label + '</strong>' + bannerSub + '</div>';
     }
-    html += '<div class="phase-banner">今天：<strong>' + todaysPhaseObj.label + '</strong>' + bannerSub + '</div>';
   }
 
   // Month navigation
@@ -2215,39 +2694,46 @@ function renderCalendar() {
     var isPredicted = !!predictedDates[date];
     var isSpotting = !!spottingDates[date];
     var isTD = date === today;
-    var cycleId = '';
-    if (isPeriod || isSpotting) cycleId = findCycleIdForDate(date);
     var hasLog = hasDaySymptoms(date);
 
     // Estimate phase for days that are not actual/predicted period or spotting days
-    var phase = null;
-    if (!isPeriod && !isPredicted && !isSpotting) phase = getPhaseForDate(date, prediction);
+    // 推迟期间：预计日之后的阶段不再上色（那时按日历法算出的排卵/黄体已不可信）
+    var phase = null, fertile = false;
+    if (!isPeriod && !isPredicted && !isSpotting && !(phaseCutoff && date >= phaseCutoff)) {
+      phase = getPhaseForDate(date, prediction);
+      fertile = phase && isFertileDay(date, prediction);
+    }
+    // 已经过了预计来潮日、但到今天还没记录：浅橙底，表示"在等这次来潮"
+    var isOverdue = !!(phaseCutoff && date >= phaseCutoff && date <= today && !isPeriod && !isSpotting);
 
+    var isOvDay = fertile && isOvulationDay(date, prediction);
     var cls = 'calendar-cell';
     if (isPeriod) cls += ' period-day';
     if (isPredicted && !isPeriod) cls += ' predicted-day';
     if (isSpotting && !isPeriod && !isPredicted) cls += ' spotting-day';
     if (phase) cls += ' ' + phase.key + '-day';
+    if (fertile) cls += ' fertile-day';
+    if (isOvDay) cls += ' ovulation-day';
+    if (isOverdue) cls += ' late-day';
     if (isTD) cls += ' today';
     cls += ' has-records'; // 任意日期都可点击进入记录
 
-    var onClick = '';
-    if (cycleId) {
-      onClick = ' onclick="nav(\'dayDetail\',{cycleId:\'' + cycleId + '\',date:\'' + date + '\'})"';
-    } else {
-      onClick = ' onclick="nav(\'symptoms\',{date:\'' + date + '\'})"';
-    }
+    var onClick = ' onclick="openCalendarDaySheet(\'' + date + '\')"';
 
-    // marker: period/predicted -> dot ; spotting -> 出血小标 ; phase -> 阶段小标
+    // marker: 已记录经期 -> 实心粉「月经」；预计 -> 浅粉「预计」；出血 -> 小标；阶段 -> 阶段小标
+    // 排卵期 6 天：浅绿底，前 5 天「易孕」，末天 = 排卵日，底色更深 + 实心绿「排卵」徽标
     var marker = '';
-    if (isPeriod || isPredicted) {
-      marker = '<span class="calendar-dot"></span>';
+    if (isPeriod) {
+      marker = '<span class="calendar-phase-tag real-period">月经</span>';
+    } else if (isPredicted) {
+      marker = '<span class="calendar-phase-tag pred-period">预计</span>';
     } else if (isSpotting) {
       marker = '<span class="calendar-spot-tag">出血</span>';
     } else if (phase) {
-      var PHASE_TAG = { menstrual:'经期', follicular:'卵泡', ovulation:'易孕', luteal:'经前' };
-      var tagText = PHASE_TAG[phase.key] || '';
-      marker = '<span class="calendar-phase-tag" style="color:' + phase.color + '">' + tagText + '</span>';
+      var PHASE_TAG = { menstrual:'预计', follicular:'卵泡', luteal:'经前' };
+      var tagText = fertile ? (isOvDay ? '排卵' : '易孕') : (PHASE_TAG[phase.key] || '');
+      marker = '<span class="calendar-phase-tag' + (fertile ? (isOvDay ? ' ovulation' : ' fertile') : '') + '"' +
+        (fertile ? '' : ' style="color:' + phase.color + '"') + '>' + tagText + '</span>';
     }
 
     html += '<div class="' + cls + '"' + onClick + '>' +
@@ -2258,18 +2744,40 @@ function renderCalendar() {
   }
   html += '</div>';
 
-  // Legend（全名 + 白话说明，让用户无需猜）
+  // Legend（分组：底色 / 标记，色块和标签对齐）
+  var legendMarks =
+    '<span><span class="calendar-legend-dot predicted"></span>预计经期</span>' +
+    '<span><span class="calendar-legend-dot ovulation"></span>排卵日</span>' +
+    (lateDays > 0 ? '<span><span class="calendar-legend-dot late"></span>等待来潮</span>' : '') +
+    '<i class="calendar-legend-break"></i>' +
+    '<span><span class="calendar-legend-dot spotting"></span>异常出血</span>' +
+    '<span><span class="calendar-legend-dot log"></span>有记录</span>' +
+    '<span><span class="calendar-today-mark"></span>今天</span>';
   html += '<div class="calendar-legend">' +
-    '<span><span class="calendar-legend-dot" style="background:#FCEEF1;border:1px solid #E8657A"></span> 月经期（来姨妈）</span>' +
-    '<span><span class="calendar-legend-dot spotting"></span> 异常出血（非经期）</span>' +
-    '<span><span class="calendar-legend-dot" style="background:#EAF1FB;border:1px solid #5B8FD9"></span> 卵泡期（经期后）</span>' +
-    '<span><span class="calendar-legend-dot" style="background:#E7F5EE;border:1px solid #2E9E6B"></span> 排卵期（易受孕）</span>' +
-    '<span><span class="calendar-legend-dot" style="background:#FBF1E0;border:1px solid #D9962E"></span> 黄体期（经前）</span>' +
-    '<span><span class="calendar-legend-dot log"></span> 有症状/白带记录</span>' +
-    '<span><span class="calendar-today-mark"></span> 今天</span>' +
+    '<div class="calendar-legend-group">' +
+      '<span class="calendar-legend-label">底色</span>' +
+      '<span class="calendar-legend-items">' +
+        '<span><span class="calendar-legend-dot menstrual"></span>月经期</span>' +
+        '<span><span class="calendar-legend-dot follicular"></span>卵泡期</span>' +
+        '<span><span class="calendar-legend-dot fertile"></span>排卵期</span>' +
+        '<span><span class="calendar-legend-dot luteal"></span>黄体期</span>' +
+      '</span>' +
     '</div>' +
-    '<div style="text-align:center;margin-top:8px;font-size:12px;color:var(--text-tertiary)">格子里的「经期/卵泡/易孕/经前」即当前所处阶段 · 月经期为记录或预测，其余为按周期估算 · <span style="color:#8A8F99">浅灰「出血」为异常出血，不计入预测</span></div>' +
-    '<div style="text-align:center;margin-top:6px;font-size:12px;color:var(--text-tertiary)">点击任意日期：有出血看当日详情，没出血也能记白带、胸涨等</div>';
+    '<div class="calendar-legend-group">' +
+      '<span class="calendar-legend-label">标记</span>' +
+      '<span class="calendar-legend-items">' + legendMarks + '</span>' +
+    '</div>' +
+    '<div class="calendar-legend-note">' +
+      '<div>实心粉 = 已记录的经期；斜纹「预计」是按周期推算的</div>' +
+      '<div>「出血」为异常出血，不计入预测</div>' +
+      '<div>排卵期 = 排卵前 5 天 + 排卵当天，共 6 天</div>' +
+      '<div>末天底色更深并标「排卵」，前 5 天标「易孕」</div>' +
+    '</div>' +
+    (lateDays > 0
+      ? '<div class="calendar-late-note">这次来潮还没记录，阶段估算先暂停；点「月经开始」记录后会自动恢复</div>'
+      : '') +
+  '</div>' +
+  '<div class="calendar-hint">点某一天可标「<b>月经开始</b>」/「<b>月经结束</b>」，也能查看当天记录</div>';
 
   el.innerHTML = html;
 }
@@ -2359,7 +2867,7 @@ function renderHome() {
     var endedDays = 0;
     var recentlyEnded = false;
     if (lastEnded) {
-      endedDays = daysBetween(lastEnded.endDate, todayStr());
+      endedDays = dateDiffDays(lastEnded.endDate, todayStr());
       recentlyEnded = endedDays >= 0 && endedDays <= 3;
     }
 
@@ -2373,6 +2881,7 @@ function renderHome() {
         '<div style="font-size:20px;font-weight:700;color:var(--primary-dark)">' + formatDate(lastEnded.startDate) + ' ~ ' + formatDate(lastEnded.endDate) + '</div>' +
         '<div style="font-size:14px;color:var(--text-secondary);margin-top:4px">持续 ' + daysBetween(lastEnded.startDate, lastEnded.endDate) + ' 天 · ' + endedDays + ' 天前结束</div>' +
         '<div style="font-size:12px;color:var(--text-tertiary);margin-top:8px">查看这次的每日记录 ›</div>' +
+        '<div style="font-size:12px;color:var(--primary);margin-top:6px" onclick="event.stopPropagation();showEditCycleDatesModal(\'' + lastEnded.id + '\')">日期记错了？修改起止日期</div>' +
         '</div></div>' +
         '<div class="empty-state" style="padding:12px 20px">' +
         '<div class="empty-icon" style="font-size:42px">🥺</div>' +
@@ -2439,7 +2948,7 @@ function renderHome() {
   el.innerHTML = '' +
     '<div class="card"><div class="cycle-info">' +
     '<div class="cycle-day-num">第 ' + dayCount + ' 天</div>' +
-    '<div class="cycle-day-count">' + formatDate(cycle.startDate) + ' 来潮 · 进行中</div>' +
+    '<div class="cycle-day-count" style="cursor:pointer" onclick="showEditCycleDatesModal(\'' + cycle.id + '\')">' + formatDate(cycle.startDate) + ' 来潮 · 进行中 <span style="color:var(--primary);font-size:12px">✎ 修改</span></div>' +
     '</div>' +
     '<div class="stats-row">' +
     '<div class="stat-card"><div class="stat-num">' + stats.napkin + '</div><div class="stat-label">卫生巾</div></div>' +
@@ -2495,7 +3004,7 @@ function renderRecord() {
     var lastEnded2 = getLastEndedCycle();
     var recentlyEnded2 = false;
     if (lastEnded2) {
-      var ed = daysBetween(lastEnded2.endDate, todayStr());
+      var ed = dateDiffDays(lastEnded2.endDate, todayStr());
       recentlyEnded2 = ed <= 3;
     }
     var reopenBtn = recentlyEnded2 ? '<button class="btn btn-secondary" style="max-width:200px;margin:8px auto 0" onclick="reopenLastEnded()">重新打开上个周期</button>' : '';
@@ -2989,6 +3498,9 @@ function renderCycleDaily(params) {
     '<span class="day-stat" style="background:#FCEEF1;color:#E8657A">护垫 ' + stats.pad + '</span>' +
     '<span class="day-stat" style="background:#F3E5F5;color:#8E24AA">棉条 ' + stats.tampon + '</span>' +
     '<span class="day-stat" style="background:#E8F5E9;color:#2E7D32">安睡裤 ' + stats.pants + '</span>' +
+    '</div>' +
+    '<div style="margin-top:12px;padding-top:10px;border-top:1px solid #f3f3f3;text-align:center">' +
+    '<span style="font-size:13px;color:var(--primary);cursor:pointer;padding:4px 10px" onclick="showEditCycleDatesModal(\'' + cycle.id + '\')">✎ 修改起止日期</span>' +
     '</div></div></div>';
 
   if (ongoing) {
@@ -3107,10 +3619,23 @@ function renderDayDetail(params) {
       '<div style="text-align:center;color:#999;padding:14px;font-size:14px">当天没有症状记录</div></div>';
   }
 
+  // 本期起止日期（可在日历点进来后直接改，记错时间不用再找入口）
+  var clsMap = classifyCycles();
+  var isRealPeriod = (clsMap[cycle.id] === 'period');
+  var rangeEnd = cycle.endDate || todayStr();
+  var rangeDays = daysBetween(cycle.startDate, rangeEnd);
+  var rangeLabel = isRealPeriod ? '本期月经' : '这次出血';
+  var rangeText = formatDate(cycle.startDate) + (cycle.endDate ? ' ~ ' + formatDate(cycle.endDate) + ' · 共 ' + rangeDays + ' 天' : ' ～ 进行中 · 已 ' + rangeDays + ' 天');
+  var rangeHtml = '<div onclick="showEditCycleDatesModal(\'' + cycle.id + '\')" style="display:flex;align-items:center;gap:8px;margin-top:12px;padding:10px 12px;background:#FCEEF1;border-radius:10px;cursor:pointer">' +
+    '<div style="flex:1;font-size:13px;color:#C94B63;line-height:1.5">' + rangeLabel + '：' + rangeText +
+      '<div style="font-size:12px;color:#B9808C;margin-top:2px">日期记错了？点这里改起止日期</div></div>' +
+    '<span style="font-size:13px;color:#C94B63;flex:0 0 auto">✎ 修改</span></div>';
+
   el.innerHTML = '<div class="card"><div class="cycle-info">' +
     '<div style="font-size:18px;font-weight:600">' + formatDateFull(date) + '</div>' +
     '<div class="cycle-day-count">' + getWeekday(date) + (isToday(date) ? ' · 今天' : '') + '</div>' +
     '</div>' +
+    rangeHtml +
     '<div class="stats-row">' +
     '<div class="stat-card"><div class="stat-num">' + stats.napkin + '</div><div class="stat-label">卫生巾</div></div>' +
     '<div class="stat-card"><div class="stat-num">' + stats.pad + '</div><div class="stat-label">护垫</div></div>' +
@@ -3237,7 +3762,7 @@ function renderBackup() {
     '<div style="font-size:13px;color:#666;line-height:1.6;margin-bottom:12px">清除所有数据，且不可撤销。建议先备份再清除。</div>' +
     '<button class="btn btn-danger" onclick="confirmClearAll()">清除所有数据</button></div>' +
 
-    '<div style="text-align:center;padding:16px 0 8px;color:#ccc;font-size:12px">经期记录 v1.6.3 · 数据仅保存在本机</div>';
+    '<div style="text-align:center;padding:16px 0 8px;color:#ccc;font-size:12px">经期记录 v' + APP_VERSION + ' · 数据仅保存在本机</div>';
 }
 
 function generateBackup() {
@@ -3665,6 +4190,200 @@ function showEndCycleModal(cycleId) {
       nav('home');
     }
   });
+}
+
+/* ===== 修改周期起止日期 ===== */
+
+/* 找出「开始日在自己之后」的重叠周期：这种情况不能自动改别人的数据，直接拦下 */
+function findLaterConflict(cycleId, start, end) {
+  for (var i = 0; i < state.data.cycles.length; i++) {
+    var c = state.data.cycles[i];
+    if (c.id === cycleId) continue;
+    if (c.startDate > start && c.startDate <= end) return c;
+  }
+  return null;
+}
+
+/* 前一条记录若被新的开始日压住，把它的结束日收到新开始日前一天（不动它的开始日） */
+function trimPreviousCycle(cycleId, newStart) {
+  var hit = null;
+  for (var i = 0; i < state.data.cycles.length; i++) {
+    var c = state.data.cycles[i];
+    if (c.id === cycleId) continue;
+    if (c.startDate >= newStart) continue;
+    if (c.endDate && c.endDate >= newStart) {
+      c.endDate = dayBefore(newStart);
+      hit = c;
+    }
+  }
+  return hit;
+}
+
+/* 弹窗内实时预览：共几天 / 是否太短 */
+function _cycleEditPreview() {
+  var sEl = document.getElementById('cycleStartInput');
+  var eEl = document.getElementById('cycleEndInput');
+  var chk = document.getElementById('cycleOngoingChk');
+  var box = document.getElementById('cycleEditPreview');
+  var chips = document.getElementById('cycleDurChips');
+  if (!sEl || !eEl || !box) return;
+  var ongoing = !!(chk && chk.checked);
+  // 结束日期任何时候都可点（禁用的输入框在手机上点了毫无反应，用户会以为坏了）
+  eEl.disabled = false;
+  eEl.style.opacity = '1';
+  if (chips) chips.style.opacity = '1';
+  var s = sEl.value;
+  var e = ongoing ? todayStr() : eEl.value;
+  if (!s || !e) { box.innerHTML = ''; return; }
+  if (e < s) {
+    box.innerHTML = '<span style="color:#C94B63">结束日期不能早于开始日期</span>';
+    return;
+  }
+  var n = daysBetween(s, e);
+  var txt = '共 ' + n + ' 天' + (ongoing ? '（进行中）' : '');
+  if (n < 3) txt += ' · 不足 3 天会按异常出血处理，不计入周期预测';
+  var htmlOut = '<span style="color:' + (n < 3 ? '#B26A00' : 'var(--text-secondary)') + '">' + txt + '</span>';
+  // 已经被记录过的更换记录如果落在新区间之外，提前说清楚（数据不会丢，但每日列表里看不到）
+  var cid = state.editingCycleDatesId;
+  var cur = cid ? getCycleById(cid) : null;
+  if (cur && cur.changes && cur.changes.length) {
+    var outCnt = 0;
+    for (var ci = 0; ci < cur.changes.length; ci++) {
+      var cd = cur.changes[ci].date;
+      if (cd && (cd < s || cd > e)) outCnt++;
+    }
+    if (outCnt > 0) {
+      htmlOut += '<div style="color:#B26A00;margin-top:6px;line-height:1.5">有 ' + outCnt + ' 条更换记录会落在新区间外<br>（仍计入统计，但不在每日列表显示）</div>';
+    }
+  }
+  box.innerHTML = htmlOut;
+}
+
+function _cycleEditSetStart(v) {
+  var el = document.getElementById('cycleStartInput');
+  if (el) el.value = v;
+  _cycleEditPreview();
+}
+
+function _cycleEditSetEnd(v) {
+  var el = document.getElementById('cycleEndInput');
+  if (el) el.value = v;
+  _cycleEditPreview();
+}
+
+/* 点结束日期：随时可点；选好日期后自动取消「还没结束」的勾选（取消弹窗则保持原状） */
+function _cycleEditPickEnd(input) {
+  var v = (input && input.value) ? input.value : todayStr();
+  showDatePicker({
+    current: v,
+    onConfirm: function(v2) {
+      var chk = document.getElementById('cycleOngoingChk');
+      if (chk) chk.checked = false;
+      _cycleEditSetEnd(v2);
+    }
+  });
+}
+
+/* 快捷天数：从开始日往后推，自动填结束日（不超过今天） */
+function _cycleEditPickDuration(n) {
+  var sEl = document.getElementById('cycleStartInput');
+  if (!sEl || !sEl.value) return;
+  var e = addDays(sEl.value, n - 1);
+  if (e > todayStr()) e = todayStr();
+  var eEl = document.getElementById('cycleEndInput');
+  if (eEl) eEl.value = e;
+  var chk = document.getElementById('cycleOngoingChk');
+  if (chk && chk.checked) chk.checked = false;
+  _cycleEditPreview();
+}
+
+function _cycleEditToggleOngoing() {
+  var chk = document.getElementById('cycleOngoingChk');
+  var eEl = document.getElementById('cycleEndInput');
+  if (chk && !chk.checked && eEl && !eEl.value) {
+    var sEl = document.getElementById('cycleStartInput');
+    eEl.value = (sEl && sEl.value > todayStr()) ? sEl.value : todayStr();
+  }
+  _cycleEditPreview();
+}
+
+/* 校验：不通过时弹窗保持打开 */
+function _cycleEditValidate(vals, cycleId) {
+  var chk = document.getElementById('cycleOngoingChk');
+  var ongoing = !!(chk && chk.checked);
+  var start = vals.cycleStart;
+  var end = ongoing ? todayStr() : vals.cycleEnd;
+  if (!start) { showToast('请选择开始日期'); return false; }
+  if (start > todayStr()) { showToast('开始日期不能晚于今天'); return false; }
+  if (!ongoing) {
+    if (!end) { showToast('请选择结束日期，或勾选「还没结束」'); return false; }
+    if (end < start) { showToast('结束日期不能早于开始日期'); return false; }
+    if (end > todayStr()) { showToast('结束日期不能晚于今天'); return false; }
+  }
+  var later = findLaterConflict(cycleId, start, end);
+  if (later) {
+    showToast('和 ' + formatDate(later.startDate) + ' 开始的那条记录重叠了，请先调整那一条');
+    return false;
+  }
+  if (ongoing) {
+    for (var i = 0; i < state.data.cycles.length; i++) {
+      var c = state.data.cycles[i];
+      if (c.id !== cycleId && c.startDate > start) {
+        showToast('后面还有 ' + formatDate(c.startDate) + ' 的记录，不能设为进行中');
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+function showEditCycleDatesModal(cycleId) {
+  var cycle = getCycleById(cycleId);
+  if (!cycle) return;
+  state.editingCycleDatesId = cycleId;
+  var ongoing = !cycle.endDate;
+  var endVal = cycle.endDate || '';
+  var chips = '';
+  var opts = [3, 4, 5, 6, 7];
+  for (var i = 0; i < opts.length; i++) {
+    chips += '<button type="button" class="btn btn-secondary" style="width:auto;flex:1;min-height:0;padding:9px 0;font-size:13px;font-weight:500" onclick="_cycleEditPickDuration(' + opts[i] + ')">' + opts[i] + ' 天</button>';
+  }
+  var body =
+    '<div style="text-align:center;font-size:13px;color:var(--text-secondary);margin-bottom:16px">现在是 ' +
+      formatDate(cycle.startDate) + (cycle.endDate ? ' ~ ' + formatDate(cycle.endDate) : ' ~ 进行中') + '</div>' +
+    '<div class="form-group" style="margin:0 0 14px"><div class="form-label">开始日期（来潮第一天）</div>' +
+      '<input type="text" class="form-input picker-input" name="cycleStart" id="cycleStartInput" value="' + cycle.startDate + '" readonly onclick="showDatePicker({current:this.value,onConfirm:function(v){_cycleEditSetStart(v)}})"></div>' +
+    '<div class="form-group" style="margin:0 0 12px"><div class="form-label">结束日期（最后一天）</div>' +
+      '<input type="text" class="form-input picker-input" name="cycleEnd" id="cycleEndInput" value="' + endVal + '" placeholder="点这里选择结束日" readonly onclick="_cycleEditPickEnd(this)"></div>' +
+    '<div style="font-size:12px;color:#999;margin-bottom:6px">记不清哪天结束？按天数点一下</div>' +
+    '<div id="cycleDurChips" style="display:flex;gap:6px;margin:0 0 14px">' + chips + '</div>' +
+    '<label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#666;margin-bottom:12px;padding:10px 12px;background:#faf7f8;border-radius:10px">' +
+      '<input type="checkbox" id="cycleOngoingChk" ' + (ongoing ? 'checked ' : '') + 'onchange="_cycleEditToggleOngoing()" style="width:18px;height:18px;flex:0 0 auto;accent-color:#E8657A">' +
+      '<span>还没结束，仍在流血（不填结束日）</span></label>' +
+    '<div id="cycleEditPreview" style="font-size:13px;text-align:center;min-height:18px"></div>';
+  showModal({
+    title: '修改起止日期',
+    body: body,
+    confirmText: '保存',
+    validateBeforeClose: function(vals) { return _cycleEditValidate(vals, cycleId); },
+    onConfirm: function(vals) {
+      var chk = document.getElementById('cycleOngoingChk');
+      var isOngoing = !!(chk && chk.checked);
+      var start = vals.cycleStart;
+      var end = isOngoing ? null : vals.cycleEnd;
+      var prev = trimPreviousCycle(cycleId, start);
+      cycle.startDate = start;
+      cycle.endDate = end;
+      saveData();
+      vibrate();
+      var realEnd = end || todayStr();
+      var msg = '✓ 已保存 · 共 ' + daysBetween(start, realEnd) + ' 天';
+      if (prev) msg += '，上一条结束日改为 ' + formatDate(prev.endDate);
+      showToast(msg);
+      navigateTo(state.currentPage, state.pageParams);
+    }
+  });
+  _cycleEditPreview();
 }
 
 /* ===== Init ===== */

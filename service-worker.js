@@ -1,7 +1,7 @@
 /* ===== Service Worker for Period Tracker PWA ===== */
 /* Cache-first strategy for offline use */
 
-const CACHE_NAME = 'period-tracker-v1';
+const CACHE_NAME = 'period-tracker-v1.6.7';
 const STATIC_ASSETS = [
   './',
   './index.html'
